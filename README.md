@@ -53,6 +53,23 @@ During development run `npm run dev` alongside `php artisan serve`; Tailwind
 compiles only the classes it can see in the Blade files, so a production build
 must be re-run after any view changes.
 
+## The handbook
+
+`public/handbook.html` is the user handbook — every screen, every rule the
+ledger enforces, the month-end routine, and a glossary for the partners who
+read the figures without being accountants. It is a single self-contained
+page in three complete editions, switched from the sidebar:
+
+| Edition | Script | Direction |
+| --- | --- | --- |
+| English | Latin | LTR |
+| العربية | Arabic | RTL |
+| کوردی (سۆرانی) | Arabic | RTL |
+
+Serve the app and open <http://localhost:8000/handbook.html>; it needs no
+routing, no authentication and no build step. The chosen language and theme
+are remembered per reader in `localStorage`.
+
 ## How the scope of work maps onto the system
 
 ### §2 Company structure — `Partner`, `DistributionService`
