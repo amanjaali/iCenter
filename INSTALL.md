@@ -156,7 +156,7 @@ npm run dev
 php artisan test
 ```
 
-72 tests, run against MySQL rather than SQLite so they exercise the real decimal
+80 tests, run against MySQL rather than SQLite so they exercise the real decimal
 handling and locking the posting engine depends on. They use
 `allva_accounting_test` and leave your main database alone.
 
@@ -175,10 +175,24 @@ A quick tour that exercises the parts that matter:
 4. **Settings** — the three open decisions from §10 of the scope of work. Change
    the mid-month rule, regenerate a month, and watch the figures move. Invoices
    already issued keep the rule they were raised under.
-5. **Sign in as `operations@allva.iq`** — a different dashboard, with no money on
+5. **Receipts → Record receipt** — pick a bus company, enter part of what an
+   invoice is for, apply it, then **Print receipt**: the amount in figures and
+   in words, which invoices it settled, and what is still owed.
+6. **Sign in as `operations@allva.iq`** — a different dashboard, with no money on
    it anywhere, and every financial URL refused.
-6. **Reports → Balance sheet** — assets equal liabilities plus equity, to the
+7. **Reports → Balance sheet** — assets equal liabilities plus equity, to the
    dinar.
+
+---
+
+## The documents in this zip
+
+| Where | What |
+| --- | --- |
+| `http://localhost:8000/handbook.html` | The user handbook — every screen and rule, in English, العربية and کوردی. Needs no login. |
+| `docs/scope-of-work.html` | Scope of work, second edition. Open it in a browser. |
+| `docs/eTrackify-Accounting-Scope-of-Work-v2.docx` | The same document in Word, for circulating and signing off. |
+| `README.md` | How each section of the scope of work maps onto the code. |
 
 ---
 
