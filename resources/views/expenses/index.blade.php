@@ -25,7 +25,7 @@
                 <option value="">All accounts</option>
                 @foreach ($accounts as $account)
                     <option value="{{ $account->id }}" @selected(request('account_id') == $account->id)>
-                        {{ $account->code }} — {{ \Illuminate\Support\Str::limit($account->name, 28) }}
+                        {{ \Illuminate\Support\Str::limit($account->name, 34) }}
                     </option>
                 @endforeach
             </select>

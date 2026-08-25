@@ -41,7 +41,7 @@
                     <select id="salary_account_id" name="salary_account_id" class="select" required>
                         @foreach ($salaryAccounts as $account)
                             <option value="{{ $account->id }}" @selected(old('salary_account_id', $employee->salary_account_id) == $account->id)>
-                                {{ $account->code }} — {{ $account->name }}
+                                {{ $account->name }}
                             </option>
                         @endforeach
                     </select>

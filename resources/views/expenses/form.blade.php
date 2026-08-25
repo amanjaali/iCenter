@@ -34,14 +34,14 @@
                     @error('description')<div class="field-error">{{ $message }}</div>@enderror
                 </div>
                 <div class="sm:col-span-3">
-                    <label class="label" for="account_id">Account</label>
+                    <label class="label" for="account_id">What was it for?</label>
                     <select id="account_id" name="account_id" class="select @error('account_id') input-invalid @enderror" required>
-                        <option value="">Choose an account</option>
+                        <option value="">Choose a category</option>
                         @foreach ($accounts->groupBy('class') as $class => $group)
                             <optgroup label="{{ $class }}">
                                 @foreach ($group as $account)
                                     <option value="{{ $account->id }}" @selected(old('account_id', $expense->account_id) == $account->id)>
-                                        {{ $account->code }} — {{ $account->name }}
+                                        {{ $account->name }}
                                     </option>
                                 @endforeach
                             </optgroup>
