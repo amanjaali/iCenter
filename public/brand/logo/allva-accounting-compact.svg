@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="44" viewBox="0 0 300 44">
+  
+  <g transform="translate(2 4) scale(0.32)"><path d="M54 10 L54 86 L14 108 Z" fill="#0A1F3D"></path><path d="M66 10 L106 108 L66 86 Z" fill="#00C2E8"></path></g>
+  <text class="wm" x="48" y="29" font-size="20" fill="#0A1F3D">ALLVA</text>
+  <rect x="132" y="12" width="1" height="20" fill="#C7D0DC"></rect>
+  <text class="pn" x="146" y="29" font-size="15" fill="#40495A">Accounting</text>
+</svg>

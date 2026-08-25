@@ -1,0 +1,243 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views';
+@source '../../app';
+
+/*
+| ALLVA Accounting — design tokens.
+|
+| Values are taken verbatim from the brand kit (public/brand/tokens.json). The
+| brand rules that matter here: signal blue marks the active UI state only, it
+| is not a general highlight colour; the product name is never set bolder than
+| the ALLVA wordmark.
+*/
+@theme {
+  --color-navy: #0A1F3D;
+  --color-navy-700: #14356B;
+  --color-signal: #00C2E8;
+  --color-signal-light: #4FE3FF;
+
+  --color-mist: #F5F7FA;
+  --color-rule: #EDF0F5;
+  --color-line: #E4E9F0;
+  --color-line-strong: #DBE1EA;
+
+  --color-dark-surface: #0E2952;
+  --color-dark-border: #1E3A66;
+  --color-dark-muted: #7A8EAB;
+  --color-dark-text: #A9B7CA;
+
+  --color-ink: #0A1F3D;
+  --color-body: #40495A;
+  --color-muted: #55617A;
+  --color-faint: #98A2B3;
+
+  /* Status colours. Deliberately outside the brand palette so a paid invoice
+     never reads as "the active tab". */
+  --color-positive: #0E7C5A;
+  --color-positive-soft: #E8F6F1;
+  --color-caution: #9A6206;
+  --color-caution-soft: #FDF3E2;
+  --color-negative: #B3261E;
+  --color-negative-soft: #FCEDEC;
+
+  --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Sora', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--color-mist);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; color: var(--color-ink); }
+
+  /* Figures line up column-to-column only if the digits are tabular. */
+  .tabular, td.num, th.num { font-variant-numeric: tabular-nums; }
+
+  [dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+  ::selection { background: var(--color-signal-light); color: var(--color-navy); }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 1px;
+  }
+}
+
+@layer components {
+  /* -- Surfaces ---------------------------------------------------------- */
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+  }
+  .card-pad { padding: 1.25rem 1.375rem; }
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    padding: 1rem 1.375rem; border-bottom: 1px solid var(--color-rule);
+  }
+  .card-title { font-family: var(--font-display); font-size: 0.9375rem; font-weight: 500; }
+  .card-sub { font-size: 0.6875rem; color: var(--color-faint); }
+
+  /* -- Eyebrow labels: mono, letterspaced, the brand's data voice --------- */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+  }
+
+  /* -- Tables ------------------------------------------------------------ */
+  .table { width: 100%; border-collapse: collapse; }
+  .table thead th {
+    font-family: var(--font-mono);
+    font-size: 0.59375rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+    font-weight: 400;
+    text-align: start;
+    padding: 0.75rem 1.25rem;
+    background: #F9FAFC;
+    border-bottom: 1px solid var(--color-rule);
+    white-space: nowrap;
+  }
+  .table tbody td {
+    padding: 0.8125rem 1.25rem;
+    border-bottom: 1px solid #F2F4F8;
+    vertical-align: middle;
+  }
+  .table tbody tr:last-child td { border-bottom: 0; }
+  .table tbody tr:hover { background: #F9FAFC; }
+  .table .num { text-align: end; font-family: var(--font-mono); font-size: 0.78125rem; }
+  .table tfoot td {
+    padding: 0.8125rem 1.25rem;
+    border-top: 1px solid var(--color-line-strong);
+    font-weight: 500;
+    background: #F9FAFC;
+  }
+  .table-compact tbody td { padding: 0.5rem 1rem; }
+  .table-compact thead th { padding: 0.5rem 1rem; }
+
+  /* -- Buttons ----------------------------------------------------------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.78125rem; font-weight: 500;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color .12s, border-color .12s, color .12s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--color-navy); color: #fff; }
+  .btn-primary:hover { background: var(--color-navy-700); }
+  .btn-secondary { background: #fff; color: var(--color-muted); border-color: var(--color-line-strong); }
+  .btn-secondary:hover { color: var(--color-ink); border-color: #C7D0DC; }
+  .btn-danger { background: #fff; color: var(--color-negative); border-color: #F0CFCD; }
+  .btn-danger:hover { background: var(--color-negative-soft); }
+  .btn-ghost { background: transparent; color: var(--color-muted); }
+  .btn-ghost:hover { background: var(--color-rule); color: var(--color-ink); }
+  .btn-sm { padding: 0.3125rem 0.6875rem; font-size: 0.71875rem; }
+  .btn:disabled, .btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+  /* -- Forms ------------------------------------------------------------- */
+  .label {
+    display: block;
+    font-size: 0.71875rem; font-weight: 500;
+    color: var(--color-muted);
+    margin-bottom: 0.375rem;
+  }
+  .input, .select, .textarea {
+    width: 100%;
+    padding: 0.5rem 0.6875rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    background: #fff;
+    font-family: inherit; font-size: 0.8125rem;
+    color: var(--color-ink);
+  }
+  .input:focus, .select:focus, .textarea:focus {
+    outline: 2px solid var(--color-signal); outline-offset: 1px; border-color: var(--color-signal);
+  }
+  .input[readonly], .input:disabled, .select:disabled { background: var(--color-mist); color: var(--color-muted); }
+  .input-num { font-family: var(--font-mono); text-align: end; font-variant-numeric: tabular-nums; }
+  .field-error { font-size: 0.6875rem; color: var(--color-negative); margin-top: 0.25rem; }
+  .input-invalid { border-color: var(--color-negative); }
+  .hint { font-size: 0.6875rem; color: var(--color-faint); margin-top: 0.25rem; }
+
+  /* -- Badges ------------------------------------------------------------ */
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.3125rem;
+    padding: 0.1875rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.6875rem; font-weight: 500;
+    white-space: nowrap;
+  }
+  .badge-neutral { background: var(--color-rule); color: var(--color-muted); }
+  .badge-info { background: #E6F8FD; color: #0A6E85; }
+  .badge-success { background: var(--color-positive-soft); color: var(--color-positive); }
+  .badge-warning { background: var(--color-caution-soft); color: var(--color-caution); }
+  .badge-danger { background: var(--color-negative-soft); color: var(--color-negative); }
+
+  /* -- Navigation -------------------------------------------------------- */
+  .nav-link {
+    display: flex; align-items: center; gap: 0.625rem;
+    padding: 0.4375rem 0.6875rem;
+    border-radius: var(--radius-md);
+    font-size: 0.78125rem;
+    color: var(--color-dark-text);
+    transition: background-color .12s, color .12s;
+  }
+  .nav-link:hover { background: rgba(255,255,255,.05); color: #fff; }
+  /* Signal blue marks the active state and nothing else — brand rule 3. */
+  .nav-link-active { background: var(--color-navy-700); color: #fff; }
+  .nav-link-active svg { stroke: var(--color-signal); }
+  .nav-section {
+    font-family: var(--font-mono);
+    font-size: 0.53125rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--color-dark-muted);
+    padding: 0 0.6875rem; margin: 1rem 0 0.375rem;
+  }
+
+  /* -- Misc -------------------------------------------------------------- */
+  .kpi-value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; line-height: 1; }
+  .money { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .money-negative { color: var(--color-negative); }
+
+  .empty {
+    display: flex; flex-direction: column; align-items: center; gap: 0.625rem;
+    padding: 3rem 1.5rem; text-align: center; color: var(--color-faint);
+  }
+
+  .tabs { display: inline-flex; gap: 0.25rem; background: var(--color-rule); border-radius: 5px; padding: 3px; }
+  .tab { padding: 0.3125rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.75rem; color: var(--color-muted); }
+  .tab-active { background: #fff; color: var(--color-ink); font-weight: 500; box-shadow: 0 1px 2px rgba(10,31,61,.06); }
+
+  .divider { border-top: 1px solid var(--color-rule); }
+
+  /* Printing a report should produce the report, not the application. */
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff; font-size: 10pt; }
+    .card { border: 1px solid #ccc; break-inside: avoid; }
+    .table tbody tr:hover { background: transparent; }
+    main { padding: 0 !important; }
+  }
+}

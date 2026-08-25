@@ -1,0 +1,36 @@
+:root {
+  /* brand */
+  --allva-navy: #0A1F3D;
+  --allva-navy-700: #14356B;
+  --allva-signal: #00C2E8;
+  --allva-signal-light: #4FE3FF;
+
+  /* surfaces */
+  --allva-white: #FFFFFF;
+  --allva-mist: #F5F7FA;
+  --allva-border: #E4E9F0;
+  --allva-border-strong: #DBE1EA;
+  --allva-rule: #EDF0F5;
+
+  /* dark UI (sidebar / chrome) */
+  --allva-dark-surface: #0E2952;
+  --allva-dark-border: #1E3A66;
+  --allva-dark-muted: #7A8EAB;
+  --allva-dark-text: #A9B7CA;
+
+  /* text */
+  --allva-text: #0A1F3D;
+  --allva-text-body: #40495A;
+  --allva-text-muted: #55617A;
+  --allva-text-faint: #98A2B3;
+
+  /* type */
+  --allva-font-display: 'Outfit', system-ui, sans-serif;
+  --allva-font-body: 'Sora', system-ui, sans-serif;
+  --allva-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* radius */
+  --allva-radius-sm: 4px;
+  --allva-radius-md: 8px;
+  --allva-radius-lg: 12px;
+}
