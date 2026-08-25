@@ -1,0 +1,1999 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="eTrackify accounting system — scope of work, second edition">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>eTrackify Accounting Scope of Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Sora:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ==========================================================================
+   eTrackify Accounting — Scope of Work, second edition
+
+   Palette and type are the client's own brand kit (public/brand/tokens.json),
+   the same ones the application and the handbook use, so the three read as
+   one set of documents.
+
+   The recurring device through the operating sections is a two-column split:
+   what the operator does on the left, what the ledger does on its own on the
+   right. That division is the whole argument of this rewrite, so it is the
+   structure rather than an ornament.
+   ========================================================================== */
+
+:root {
+  --navy: #0A1F3D;
+  --navy-700: #14356B;
+  --signal: #00C2E8;
+  --signal-deep: #0A6E85;
+  --signal-wash: #E6F8FD;
+
+  --ground: #F5F7FA;
+  --surface: #FFFFFF;
+  --surface-sunk: #F9FAFC;
+  --line: #E4E9F0;
+  --line-strong: #DBE1EA;
+  --rule: #EDF0F5;
+
+  --ink: #0A1F3D;
+  --body: #40495A;
+  --muted: #55617A;
+  --faint: #98A2B3;
+
+  --ok: #0E7C5A;      --ok-wash: #E8F6F1;      --ok-line: #BFE3D7;
+  --warn: #9A6206;    --warn-wash: #FDF3E2;    --warn-line: #EBD3A6;
+  --stop: #B3261E;    --stop-wash: #FCEDEC;    --stop-line: #F0CFCD;
+
+  --display: 'Outfit', system-ui, -apple-system, sans-serif;
+  --sans: 'Sora', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  --shadow: 0 1px 2px rgba(10,31,61,.05), 0 8px 24px rgba(10,31,61,.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --signal: #4FE3FF;
+    --signal-deep: #9BEBFF;
+    --signal-wash: #10314A;
+
+    --ground: #071729;
+    --surface: #0C2138;
+    --surface-sunk: #0A1B2E;
+    --line: #1B3855;
+    --line-strong: #24486A;
+    --rule: #16304A;
+
+    --ink: #E8EFF6;
+    --body: #B9C7D6;
+    --muted: #93A5B8;
+    --faint: #6E839F;
+
+    --ok: #5FD3AC;      --ok-wash: #0B2E26;      --ok-line: #1C5A48;
+    --warn: #E8B562;    --warn-wash: #33260E;    --warn-line: #6B5220;
+    --stop: #F09189;    --stop-wash: #351715;    --stop-line: #6E2E29;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+}
+
+:root[data-theme="dark"] {
+  --signal: #4FE3FF;
+  --signal-deep: #9BEBFF;
+  --signal-wash: #10314A;
+
+  --ground: #071729;
+  --surface: #0C2138;
+  --surface-sunk: #0A1B2E;
+  --line: #1B3855;
+  --line-strong: #24486A;
+  --rule: #16304A;
+
+  --ink: #E8EFF6;
+  --body: #B9C7D6;
+  --muted: #93A5B8;
+  --faint: #6E839F;
+
+  --ok: #5FD3AC;      --ok-wash: #0B2E26;      --ok-line: #1C5A48;
+  --warn: #E8B562;    --warn-wash: #33260E;    --warn-line: #6B5220;
+  --stop: #F09189;    --stop-wash: #351715;    --stop-line: #6E2E29;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--body);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; border-radius: 2px; }
+::selection { background: var(--signal); color: var(--navy); }
+
+.page { max-width: 1140px; margin: 0 auto; padding: 0 32px 120px; }
+
+/* ── Masthead ────────────────────────────────────────────────────────── */
+
+.masthead { padding: 64px 0 40px; border-bottom: 2px solid var(--navy); }
+.lockup { display: flex; align-items: center; gap: 11px; margin-bottom: 34px; }
+.lockup-name { font-family: var(--display); font-size: 15px; font-weight: 500; letter-spacing: .06em; color: var(--ink); line-height: 1; display: block; }
+.lockup-sub { font-family: var(--display); font-size: 6px; font-weight: 500; letter-spacing: .34em; color: var(--faint); padding-left: .34em; margin-top: 4px; display: block; }
+
+.eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+
+.masthead h1 {
+  font-family: var(--display); font-weight: 400; font-size: clamp(32px, 4.4vw, 50px);
+  line-height: 1.1; color: var(--ink); margin: 14px 0 0; text-wrap: balance; max-width: 20ch;
+}
+.standfirst { max-width: 66ch; margin: 20px 0 0; font-size: 17px; color: var(--muted); }
+
+.meta { display: flex; flex-wrap: wrap; gap: 30px; margin-top: 34px; }
+.meta div { min-width: 120px; }
+.meta dt { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.meta dd { margin: 5px 0 0; font-size: 13.5px; color: var(--ink); }
+
+/* ── Contents ────────────────────────────────────────────────────────── */
+
+.toc { margin: 40px 0 0; padding: 26px 0 30px; border-bottom: 1px solid var(--line); }
+.toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr)); gap: 3px 32px; margin-top: 16px; }
+.toc a { display: flex; gap: 11px; padding: 5px 0; text-decoration: none; color: var(--body); font-size: 13.5px; border-bottom: 1px solid transparent; }
+.toc a:hover { color: var(--signal-deep); }
+.toc a .n { font-family: var(--mono); font-size: 11.5px; color: var(--faint); flex: 0 0 26px; }
+.toc a.appendix .n { color: var(--faint); }
+
+/* ── Sections ────────────────────────────────────────────────────────── */
+
+section { padding-top: 66px; scroll-margin-top: 16px; }
+.sec-num { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--signal-deep); }
+section > h2 {
+  font-family: var(--display); font-weight: 500; font-size: clamp(23px, 2.7vw, 30px);
+  line-height: 1.2; color: var(--ink); margin: 8px 0 0; text-wrap: balance; max-width: 26ch;
+}
+.sec-note { color: var(--muted); max-width: 68ch; margin: 12px 0 0; font-size: 15.5px; }
+
+h3 { font-family: var(--display); font-weight: 500; font-size: 18.5px; color: var(--ink); margin: 40px 0 10px; text-wrap: balance; }
+h4 { font-weight: 500; font-size: 14.5px; color: var(--ink); margin: 26px 0 8px; font-family: var(--display); }
+
+p, li { max-width: 70ch; }
+p { margin: 0 0 14px; }
+a { color: var(--signal-deep); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a:hover { color: var(--signal); }
+strong { color: var(--ink); font-weight: 600; }
+em { font-style: italic; }
+ul, ol { margin: 0 0 16px; padding-left: 20px; }
+li { margin-bottom: 7px; }
+li::marker { color: var(--faint); }
+
+code, .code { font-family: var(--mono); font-size: .87em; background: var(--surface-sunk); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 5px; color: var(--ink); }
+.money { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.divider { border: 0; border-top: 1px solid var(--line); margin: 62px 0 0; }
+
+/* ── The recurring device: you do / the system does ──────────────────── */
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; margin: 22px 0; background: var(--surface); }
+.split > div { padding: 20px 24px 22px; }
+.split > div + div { border-left: 1px solid var(--line); background: var(--surface-sunk); }
+.split-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; display: block; margin-bottom: 12px; }
+.split > div:first-child .split-label { color: var(--signal-deep); }
+.split > div + div .split-label { color: var(--faint); }
+.split p, .split li { max-width: none; font-size: 13.5px; }
+.split p:last-child, .split ul:last-child, .split ol:last-child { margin-bottom: 0; }
+.split ol, .split ul { padding-left: 17px; }
+.split li { margin-bottom: 6px; }
+
+/* ── Callouts ────────────────────────────────────────────────────────── */
+
+.note { border: 1px solid var(--line); border-left: 3px solid var(--signal); background: var(--surface); border-radius: 4px; padding: 15px 19px; margin: 0 0 18px; max-width: 70ch; }
+.note.warn { background: var(--warn-wash); border-color: var(--warn-line); border-left-color: var(--warn); }
+.note.stop { background: var(--stop-wash); border-color: var(--stop-line); border-left-color: var(--stop); }
+.note.ok   { background: var(--ok-wash);   border-color: var(--ok-line);   border-left-color: var(--ok); }
+.note p:last-child, .note ul:last-child { margin-bottom: 0; }
+.note-title { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; display: block; margin-bottom: 7px; color: var(--faint); }
+.note.warn .note-title { color: var(--warn); }
+.note.stop .note-title { color: var(--stop); }
+.note.ok .note-title { color: var(--ok); }
+
+/* ── Tables ──────────────────────────────────────────────────────────── */
+
+.tbl-wrap { overflow-x: auto; margin: 0 0 22px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); font-weight: 400; text-align: left; padding: 11px 16px; background: var(--surface-sunk); border-bottom: 1px solid var(--rule); white-space: nowrap; }
+td { padding: 11px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; color: var(--body); }
+tr:last-child td { border-bottom: 0; }
+td strong { color: var(--ink); }
+.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th.num { text-align: right; }
+.mid { text-align: center; }
+.tick { color: var(--ok); font-weight: 600; }
+.cross { color: var(--faint); }
+tr.total td { border-top: 2px solid var(--navy); border-bottom: 0; font-weight: 600; color: var(--ink); background: var(--surface-sunk); }
+tr.sub td { border-top: 1px solid var(--line-strong); font-weight: 600; color: var(--ink); }
+.tbl-cap { font-size: 12px; color: var(--faint); margin: -14px 0 22px; }
+
+/* ── Numbered task steps ─────────────────────────────────────────────── */
+
+ol.steps { list-style: none; padding: 0; counter-reset: s; margin: 0 0 20px; max-width: 70ch; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 38px; margin-bottom: 14px; max-width: none; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: #fff;
+  font-family: var(--mono); font-size: 11px; display: flex; align-items: center; justify-content: center;
+}
+:root[data-theme="dark"] ol.steps > li::before { background: var(--navy-700); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) ol.steps > li::before { background: var(--navy-700); } }
+
+/* ── Screen path chip: what the user actually clicks ─────────────────── */
+
+.path { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; background: var(--signal-wash); color: var(--signal-deep); border: 1px solid color-mix(in srgb, var(--signal) 32%, transparent); border-radius: 3px; padding: 2px 8px; white-space: nowrap; }
+
+/* ── Role chips ──────────────────────────────────────────────────────── */
+
+.roles { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 4px; align-items: center; }
+.roles-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-right: 2px; }
+.chip { font-family: var(--mono); font-size: 10.5px; padding: 3px 8px; border-radius: 3px; white-space: nowrap; border: 1px solid transparent; }
+.chip-acct { background: var(--signal-wash); color: var(--signal-deep); border-color: color-mix(in srgb, var(--signal) 30%, transparent); }
+.chip-admin { background: var(--stop-wash); color: var(--stop); border-color: var(--stop-line); }
+.chip-ops { background: var(--warn-wash); color: var(--warn); border-color: var(--warn-line); }
+.chip-partner { background: var(--surface-sunk); color: var(--muted); border-color: var(--line); }
+
+/* ── Journal block (appendix only) ───────────────────────────────────── */
+
+.jrnl { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; margin: 0 0 16px; overflow: hidden; max-width: 70ch; }
+.jrnl-head { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 9px 14px; background: var(--surface-sunk); border-bottom: 1px solid var(--rule); }
+.jrnl-row { display: grid; grid-template-columns: 30px 62px 1fr auto; gap: 10px; padding: 8px 14px; align-items: baseline; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.jrnl-row:last-child { border-bottom: 0; }
+.jrnl-dc { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--faint); }
+.jrnl-row.dr .jrnl-dc { color: var(--signal-deep); }
+.jrnl-code { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+.jrnl-name { color: var(--muted); font-size: 12.5px; }
+.jrnl-amt { font-family: var(--mono); font-size: 12.5px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.jrnl-row.cr { padding-left: 34px; }
+
+/* ── The money-flow waterfall (§7) ───────────────────────────────────── */
+
+.flow { margin: 26px 0 8px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.flow-band { display: grid; grid-template-columns: 148px 1fr 150px; align-items: center; gap: 18px; padding: 15px 22px; border-bottom: 1px solid var(--rule); }
+.flow-band:last-child { border-bottom: 0; }
+.flow-band .who { font-size: 13px; color: var(--ink); font-weight: 500; }
+.flow-band .who small { display: block; font-weight: 400; font-size: 11.5px; color: var(--faint); margin-top: 2px; }
+.flow-band .amt { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; text-align: right; color: var(--ink); }
+.bar { height: 22px; border-radius: 3px; position: relative; background: var(--surface-sunk); overflow: hidden; }
+.bar span { position: absolute; inset-block: 0; left: 0; border-radius: 3px; }
+.bar.b-rev span   { background: var(--navy-700); }
+.bar.b-cg span    { background: #7A8EAB; }
+.bar.b-cost span  { background: var(--warn); opacity: .72; }
+.bar.b-keep span  { background: var(--ok); }
+.bar.b-part span  { background: var(--signal); }
+.flow-band.head { background: var(--surface-sunk); }
+.flow-band.head .who, .flow-band.head .amt { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); font-weight: 400; }
+.flow-band.rule-top { border-top: 2px solid var(--navy); }
+
+/* ── Partner cards (§8) ──────────────────────────────────────────────── */
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(226px, 1fr)); gap: 12px; margin: 22px 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-top: 2px solid var(--signal); border-radius: 5px; padding: 16px 18px; }
+.card .k { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); display: block; margin-bottom: 7px; }
+.card .v { font-family: var(--display); font-size: 21px; font-weight: 500; color: var(--ink); display: block; font-variant-numeric: tabular-nums; }
+.card .d { font-size: 12.5px; color: var(--muted); display: block; margin-top: 6px; line-height: 1.55; }
+
+/* ── Appendix density ────────────────────────────────────────────────── */
+
+.appendix-body { font-size: 14px; }
+.appendix-body table { font-size: 12.5px; }
+.appendix-body td { padding: 9px 14px; }
+.appendix-body th { padding: 9px 14px; }
+
+.back { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .page { padding: 0 20px 80px; }
+  .masthead { padding-top: 40px; }
+  .split { grid-template-columns: 1fr; }
+  .split > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .flow-band { grid-template-columns: 1fr auto; gap: 10px; }
+  .flow-band .bar { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div class="lockup">
+    <svg width="26" height="26" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+      <path d="M54 10 L54 86 L14 108 Z" fill="currentColor" style="color:var(--ink)"></path>
+      <path d="M66 10 L106 108 L66 86 Z" fill="#00C2E8"></path>
+    </svg>
+    <span>
+      <span class="lockup-name">ALLVA</span>
+      <span class="lockup-sub">ACCOUNTING</span>
+    </span>
+  </div>
+
+  <div class="eyebrow">Scope of work · Second edition</div>
+  <h1>The eTrackify accounting system, described as it is used</h1>
+  <p class="standfirst">
+    This edition rewrites the first. The invoice-to-payment-to-receipt cycle, which the first
+    edition named but never defined, is now specified in full. Everything else is stated as the
+    work someone actually does: which screen they open, what they type, what comes out. The
+    accounting sits underneath, where it belongs, and is written down in the appendices for the
+    auditor rather than the operator.
+  </p>
+
+  <dl class="meta">
+    <div><dt>Prepared for</dt><dd>ALLVA Company for Technology</dd></div>
+    <div><dt>System</dt><dd>eTrackify school bus tracking</dd></div>
+    <div><dt>Currency</dt><dd>Iraqi Dinar (IQD)</dd></div>
+    <div><dt>Supersedes</dt><dd>Scope of work, first edition</dd></div>
+  </dl>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <div class="eyebrow">Contents</div>
+  <div class="toc-grid">
+    <a href="#s1"><span class="n">1</span><span>What the system is for</span></a>
+    <a href="#s2"><span class="n">2</span><span>Setting up, once</span></a>
+    <a href="#s3"><span class="n">3</span><span>The daily work</span></a>
+    <a href="#s4"><span class="n">4</span><span>Invoice, payment, receipt</span></a>
+    <a href="#s5"><span class="n">5</span><span>Recording what you spend</span></a>
+    <a href="#s6"><span class="n">6</span><span>Closing the month</span></a>
+    <a href="#s7"><span class="n">7</span><span>A full month, worked through</span></a>
+    <a href="#s8"><span class="n">8</span><span>What a partner sees</span></a>
+    <a href="#s9"><span class="n">9</span><span>Who can do what</span></a>
+    <a href="#s10"><span class="n">10</span><span>Three decisions still open</span></a>
+    <a href="#a" class="appendix"><span class="n">A</span><span>Chart of accounts</span></a>
+    <a href="#b" class="appendix"><span class="n">B</span><span>Every automatic entry</span></a>
+    <a href="#c" class="appendix"><span class="n">C</span><span>Numbering and statuses</span></a>
+    <a href="#d" class="appendix"><span class="n">D</span><span>The reports</span></a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════ §1 ═══ -->
+<section id="s1">
+  <div class="sec-num">§1</div>
+  <h2>What the system is for</h2>
+  <p class="sec-note">
+    One page. If you read nothing else, read this.
+  </p>
+
+  <p>
+    ALLVA runs eTrackify, a school bus tracking service. Bus companies pay ALLVA a monthly fee for
+    every student their buses carry. Cyber Gate, ALLVA's technology partner on the project, takes
+    half. What is left, after ALLVA has paid its own costs, is divided between five partners who
+    each own a fifth of the company.
+  </p>
+
+  <p>The system exists to make one promise keepable:</p>
+
+  <div class="note ok">
+    <span class="note-title">The objective</span>
+    <p>
+      No item of income or expense can be lost, misrecorded, or left untracked — and all five
+      partners can see the whole financial activity of the company.
+    </p>
+  </div>
+
+  <h3>The whole business in one line</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:150px">Step</th><th>What happens</th><th>Who does it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Register</strong></td><td>A bus company signs up. Its buses are recorded. Students are put on buses.</td><td>Operations</td></tr>
+        <tr><td><strong>Invoice</strong></td><td>Once a month the system counts the students and produces one invoice per bus company.</td><td>Accountant</td></tr>
+        <tr><td><strong>Collect</strong></td><td>The bus company pays. The payment is recorded and a receipt is printed for them.</td><td>Accountant</td></tr>
+        <tr><td><strong>Spend</strong></td><td>Salaries, rent, SIM cards, fuel — everything ALLVA pays out is entered.</td><td>Accountant</td></tr>
+        <tr><td><strong>Share</strong></td><td>Cyber Gate's 50% is calculated and set aside.</td><td>System</td></tr>
+        <tr><td><strong>Distribute</strong></td><td>What remains is split five ways and paid to the partners.</td><td>System, on the accountant's word</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The four people who use it</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:170px">Role</th><th>Their job in one sentence</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="chip chip-ops">Operations</span></td>
+          <td>Keeps the register of bus companies, buses and students up to date. <strong>Sees no money anywhere in the system.</strong></td>
+        </tr>
+        <tr>
+          <td><span class="chip chip-acct">Accountant</span></td>
+          <td>Issues the invoices, records the payments and the costs, and presses the three month-end buttons.</td>
+        </tr>
+        <tr>
+          <td><span class="chip chip-admin">Administrator</span></td>
+          <td>Sets the price, creates the user accounts, and decides the rules. <strong>Cannot enter transactions.</strong></td>
+        </tr>
+        <tr>
+          <td><span class="chip chip-partner">Partner</span></td>
+          <td>Reads everything and changes nothing. One login each, for all five.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="note-title">The one idea worth understanding</span>
+    <p>
+      The system bills <strong>days on a bus</strong>, not headcount. Every student has a start
+      date, and when they leave, an end date. A student who joins on the 16th of a 30-day month is
+      billed for 15 days, because that is how long they were carried. Everything about the way you
+      enter students — always with dates, never editing history — follows from this, and it is why
+      an invoice raised eight months ago can still be reproduced line for line.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §2 ═══ -->
+<section id="s2">
+  <div class="sec-num">§2</div>
+  <h2>Setting up, once</h2>
+  <p class="sec-note">
+    Three screens. You do this when a new customer signs, and then rarely again.
+  </p>
+
+  <div class="roles"><span class="roles-label">Who</span>
+    <span class="chip chip-ops">Operations</span>
+    <span class="chip chip-acct">Accountant</span>
+    <span class="chip chip-admin">Administrator</span>
+  </div>
+
+  <h3>2.1 Register the bus company</h3>
+  <p><span class="path">Bus companies → Add company</span></p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You enter</span>
+      <ul>
+        <li><strong>Name</strong> — as it should appear on their invoice</li>
+        <li><strong>Code</strong> — your own short reference, e.g. <code>BC-001</code></li>
+        <li><strong>Address, contact person, phone</strong> — printed on the invoice</li>
+        <li><strong>Payment terms</strong> — how many days they have to pay. Leave it at 15 unless their contract says otherwise</li>
+        <li><strong>Status</strong> — Active</li>
+      </ul>
+    </div>
+    <div>
+      <span class="split-label">The system does</span>
+      <p>
+        Nothing hits the accounts yet — a customer is not a transaction. From now on the company
+        appears in the monthly invoice run, gets its own statement page, and every invoice raised
+        for it inherits the payment terms you set here as its due date.
+      </p>
+    </div>
+  </div>
+
+  <h3>2.2 Register its buses</h3>
+  <p><span class="path">Buses → Add bus</span> — once for each bus.</p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You enter</span>
+      <ul>
+        <li><strong>Which company</strong> it belongs to</li>
+        <li><strong>Bus number and plate</strong></li>
+        <li><strong>Route name</strong> — this prints on the invoice, so use a name the customer recognises</li>
+        <li><strong>Capacity, driver, device serial</strong></li>
+      </ul>
+    </div>
+    <div>
+      <span class="split-label">The system does</span>
+      <p>
+        Each bus becomes one line on that company's invoice. Give the routes names your customer
+        would use — "Karrada, morning" rather than "Route 3" — because they are what the customer
+        reads when they check the bill.
+      </p>
+    </div>
+  </div>
+
+  <h3>2.3 Put the students on the buses</h3>
+  <p><span class="path">Students → Enrol student</span></p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You enter</span>
+      <ul>
+        <li><strong>Name and student reference</strong></li>
+        <li><strong>School</strong>, if you track it</li>
+        <li><strong>Company, then bus</strong> — the bus list narrows to that company's buses</li>
+        <li><strong>Joined on</strong> — the date they first travelled. <strong>This is the field that decides the money.</strong></li>
+      </ul>
+    </div>
+    <div>
+      <span class="split-label">The system does</span>
+      <p>
+        Opens a dated record: <em>this student, on this bus, from this date</em>. Nothing else you
+        do needs to know about billing — from this one date the system works out how many days of
+        each month to charge for, now and every month afterwards, until you tell it the student
+        left.
+      </p>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <span class="note-title">Loading students in bulk at the start</span>
+    <p>
+      When a company first signs, you will be entering a hundred students at once. Set the
+      <strong>joined on</strong> date to the day service actually starts, not the day you happen to
+      be typing. If you type today's date for a service that began on the 1st, the first invoice
+      will be short and you will have to correct it.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §3 ═══ -->
+<section id="s3">
+  <div class="sec-num">§3</div>
+  <h2>The daily work</h2>
+  <p class="sec-note">
+    This is the entire day-to-day job. Three things happen to students; nothing else needs doing
+    between one month-end and the next.
+  </p>
+
+  <div class="roles"><span class="roles-label">Who</span><span class="chip chip-ops">Operations</span></div>
+
+  <h3>3.1 A new student starts</h3>
+  <p>
+    <span class="path">Students → Enrol student</span> — exactly as in §2.3. Give the date they
+    started. The system will charge the customer from that day, part month and all.
+  </p>
+
+  <h3>3.2 A student leaves</h3>
+  <p><span class="path">Students → open the student → Record as left</span></p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You enter</span>
+      <ol>
+        <li>Their last day on the bus</li>
+        <li>Why — left, transferred, or suspended</li>
+      </ol>
+    </div>
+    <div>
+      <span class="split-label">The system does</span>
+      <p>
+        Closes the dated record on that day. The next invoice bills up to that date and no
+        further. Their history stays exactly as it was, so last month's invoice still shows them.
+      </p>
+    </div>
+  </div>
+
+  <div class="note stop">
+    <span class="note-title">Do not just change their status to "left"</span>
+    <p>
+      Changing the status alone will not stop the billing. The system charges for the dated record,
+      not the status, so the customer will keep being invoiced for that student until you give an
+      end date. Always use <strong>Record as left</strong>.
+    </p>
+  </div>
+
+  <h3>3.3 A student moves to a different bus</h3>
+  <p>
+    <span class="path">Students → open the student → Edit → change the bus</span>. That is all.
+  </p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You enter</span>
+      <p>The new bus. Nothing else.</p>
+    </div>
+    <div>
+      <span class="split-label">The system does</span>
+      <p>
+        Closes yesterday's record on the old bus and opens a new one on the new bus from today.
+        The invoice then shows the student on both buses, each for its part of the month, and the
+        two parts add up to one month. The customer is not charged twice.
+      </p>
+    </div>
+  </div>
+
+  <h3>3.4 Someone who left comes back</h3>
+  <p>
+    Open them and use <strong>Re-enrol</strong>. Give the date they returned and the bus. A fresh
+    record opens from that date; the gap while they were away is not billed.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §4 ═══ -->
+<section id="s4">
+  <div class="sec-num">§4</div>
+  <h2>Invoice, payment, receipt</h2>
+  <p class="sec-note">
+    The cycle the first edition left undefined. This section specifies it end to end: how the
+    invoice comes into existence, what is on it, how money coming in is recorded, what the bus
+    company is handed as proof, and what happens when they pay part of it, pay it late, or never
+    pay at all.
+  </p>
+
+  <div class="roles"><span class="roles-label">Who</span><span class="chip chip-acct">Accountant</span>
+    <span class="roles-label" style="margin-left:8px">Can see, cannot touch</span>
+    <span class="chip chip-admin">Administrator</span><span class="chip chip-partner">Partner</span>
+  </div>
+
+  <h3>4.1 Creating the month's invoices</h3>
+  <p>
+    <span class="path">Invoices → Generate month</span> — once a month, usually on the last working
+    day. Nobody types an invoice. The system builds them from the student register.
+  </p>
+
+  <ol class="steps">
+    <li>Choose the month you are billing at the top of the screen.</li>
+    <li>
+      Read the preview. Every active bus company is listed with the students it will be charged
+      for, the price, and the amount. Nothing has been written yet — this is a dry run.
+    </li>
+    <li>
+      Check the companies the system says it will <em>skip</em>. Each one gives a reason in plain
+      words: already invoiced, no price set for that month, no students, or the school year is
+      paused for the summer. A skipped company is never a silent omission.
+    </li>
+    <li>Untick any company you do not want to bill in this run.</li>
+    <li>Set the invoice date. It defaults to the last day of the month.</li>
+    <li>Press <strong>Generate draft invoices</strong>.</li>
+  </ol>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You did</span>
+      <p>Picked a month, glanced down a list, pressed one button.</p>
+    </div>
+    <div>
+      <span class="split-label">The system did</span>
+      <p>
+        For every company: walked its buses, found every student whose dated record overlaps that
+        month, counted the days each was carried, looked up the price in force for that company in
+        that month, and produced a draft invoice with one line per bus. Draft invoices have not
+        touched the accounts.
+      </p>
+    </div>
+  </div>
+
+  <div class="note ok">
+    <span class="note-title">Running it twice is safe</span>
+    <p>
+      A company already invoiced for a month is skipped rather than billed again, so you cannot
+      create duplicates by re-running it. Drafts can be deleted freely — until you issue them, they
+      do not exist as far as the accounts are concerned.
+    </p>
+  </div>
+
+  <h3>4.2 What is on the invoice</h3>
+  <p>
+    Each invoice is one page of A4, on ALLVA letterhead, and contains:
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:200px">On the page</th><th>Where it comes from</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Invoice number</strong></td><td>Issued automatically in sequence — <code>INV-2026-00014</code>. Never reused, never edited.</td></tr>
+        <tr><td><strong>ALLVA's details</strong></td><td>Name, address, phone, tax number, from Settings.</td></tr>
+        <tr><td><strong>Bus company's details</strong></td><td>Name, address, contact, tax number, from their record.</td></tr>
+        <tr><td><strong>Issue date, due date</strong></td><td>The issue date you chose; the due date is that plus their payment terms.</td></tr>
+        <tr><td><strong>Service period</strong></td><td>The month being billed, e.g. August 2026.</td></tr>
+        <tr><td><strong>One line per bus</strong></td><td>Route name, number of students, months billed, price per student, line total.</td></tr>
+        <tr><td><strong>Total due</strong></td><td>The sum of the lines, in whole dinars.</td></tr>
+        <tr><td><strong>Footnote</strong></td><td>The price per student and how part months were worked out — so the customer can check the arithmetic themselves.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    On screen, clicking any line opens the <strong>student-by-student breakdown</strong> behind it:
+    every name, the days charged out of the days in the month, and a note such as "joined 16 Aug".
+    This is the screen you open when a customer telephones to dispute a figure — it answers the
+    question without anyone having to reconstruct anything.
+  </p>
+
+  <h3>4.3 Issuing and sending it</h3>
+  <p>
+    Review the drafts, then <span class="path">Issue all</span> to release the whole month, or
+    issue them one at a time from each invoice.
+  </p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You did</span>
+      <p>
+        Pressed <strong>Issue</strong>. Then <strong>Print</strong>, which opens the invoice on
+        letterhead; print it, or save it as a PDF and email it.
+      </p>
+    </div>
+    <div>
+      <span class="split-label">The system did</span>
+      <p>
+        Locked the invoice — issued invoices cannot be edited — and made the first accounting
+        entry: the bus company now owes ALLVA this money, and ALLVA has earned this revenue. If you
+        invoiced a month <em>before</em> it happens, the system holds the revenue back until that
+        month arrives rather than counting it early. (Appendix B, B.1.)
+      </p>
+    </div>
+  </div>
+
+  <h3>4.4 When the bus company pays</h3>
+  <p><span class="path">Receipts → Record receipt</span></p>
+
+  <ol class="steps">
+    <li>Choose the bus company. The screen fills with their unpaid invoices, oldest first.</li>
+    <li>Enter <strong>how much</strong> arrived, <strong>when</strong>, and <strong>how</strong> — cash, bank transfer, cheque, or other transfer.</li>
+    <li>Enter the <strong>bank reference or cheque number</strong>, if there is one.</li>
+    <li>Choose which cash or bank account the money went into.</li>
+    <li>
+      Press <strong>Apply oldest first</strong> and the system spreads the money across their open
+      invoices for you — or type amounts against particular invoices if the customer has told you
+      what they are paying for.
+    </li>
+    <li>Check the <strong>unallocated</strong> figure at the bottom, then <strong>Save</strong>.</li>
+  </ol>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You did</span>
+      <p>Entered an amount, a date and a reference, and pressed one button to match it.</p>
+    </div>
+    <div>
+      <span class="split-label">The system did</span>
+      <p>
+        Gave the receipt its number, recorded the money into the bank or cash account, reduced what
+        the customer owes by the same amount, and marked each invoice it touched as part paid or
+        paid. The customer's statement and the ageing report both update at once. (Appendix B, B.2.)
+      </p>
+    </div>
+  </div>
+
+  <h3>4.5 The receipt you give them</h3>
+  <p>
+    On the saved receipt, press <span class="path">Print receipt</span>. It opens on the same
+    letterhead as the invoice, so the two file together as a pair, and it contains:
+  </p>
+
+  <ul>
+    <li><strong>Receipt number</strong> — <code>RCP-2026-00021</code>, issued in sequence like invoices</li>
+    <li><strong>Received from</strong> and <strong>received by</strong> — both parties' details</li>
+    <li><strong>The amount, in figures and in words</strong> — "480,000 IQD" and "Four hundred and eighty thousand Iraqi Dinars only", so a figure altered afterwards no longer agrees with itself</li>
+    <li><strong>Date, method and reference</strong> — cash, transfer, cheque number</li>
+    <li><strong>Which invoices it settled</strong>, how much went to each, and what is still due on each</li>
+    <li><strong>The balance on their account</strong> after this payment, and a sentence saying in words whether they are now clear or still owe something</li>
+    <li>Signature lines for both sides, for the customer who wants one</li>
+  </ul>
+
+  <p>
+    Print it and hand it over, or save it as a PDF and email it. It can be reprinted at any time
+    from the receipt's page — there is no single physical copy to lose.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Cash collected in person</span>
+    <p>
+      For cash, record the receipt and print it before the money leaves the desk. The printed
+      receipt is the customer's proof, and because it names the invoices it settles, there is no
+      later argument about which month was paid.
+    </p>
+  </div>
+
+  <h3>4.6 When they pay only part of it</h3>
+  <p>
+    Enter what actually arrived. Apply it to the invoice. Nothing further is required.
+  </p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You did</span>
+      <p>Recorded 300,000 against an invoice for 480,000.</p>
+    </div>
+    <div>
+      <span class="split-label">The system did</span>
+      <p>
+        Marked the invoice <strong>part paid</strong>, left 180,000 outstanding on it, and kept it
+        in the unpaid list and in the ageing report at its original due date. The receipt they get
+        says 300,000 received and 180,000 still due.
+      </p>
+    </div>
+  </div>
+  <p>
+    When the rest arrives, record a second receipt the same way. The invoice becomes
+    <strong>paid</strong> and drops off the outstanding list. Both receipts stay on the record and
+    both can be reprinted.
+  </p>
+
+  <h3>4.7 When they pay several months at once</h3>
+  <p>
+    Record the full amount received and apply only the part for which invoices exist. The rest stays
+    on the receipt as <strong>unallocated</strong> — it is their money held on account, and the
+    receipt says so.
+  </p>
+  <p>
+    As later months are invoiced, open that receipt again and apply the balance from the panel on
+    its page. Unallocated cash is flagged on the receipts list so it cannot quietly sit there
+    forgotten.
+  </p>
+
+  <h3>4.8 When they pay late</h3>
+  <p>
+    Nothing is required of you; the system is already tracking it. From the morning after the due
+    date:
+  </p>
+  <ul>
+    <li>The invoice appears under <strong>Overdue</strong> on the invoice list</li>
+    <li>The dashboard names the number of overdue invoices and the total past due</li>
+    <li>
+      The <strong>receivables ageing</strong> report puts the balance into a bucket — current,
+      1–30 days, 31–60, 61–90, or over 90 — so you can see at a glance who has been left too long
+    </li>
+    <li>Anything over 90 days turns red on the dashboard</li>
+  </ul>
+  <p>
+    Chasing is done from the company's page, which shows their whole account — invoices raised,
+    receipts applied, and the running balance — in one list you can read down the telephone.
+  </p>
+
+  <div class="note warn">
+    <span class="note-title">Charging a late fee is not automatic</span>
+    <p>
+      The chart of accounts has a place for late payment fees, but the system does not add them by
+      itself, because whether ALLVA charges them is a commercial decision that is not settled. If
+      you do charge one, it is entered as a separate line. If ALLVA decides late fees should be
+      charged as a rule, say so and it can be automated — see §10.
+    </p>
+  </div>
+
+  <h3>4.9 When the money never comes</h3>
+  <p>
+    There is a difference between an invoice that was wrong and a debt that will not be paid, and
+    the system keeps them apart:
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:180px">Situation</th><th>What you do</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>The invoice should never have been raised</strong></td>
+          <td><strong>Void</strong> it, with a reason</td>
+          <td>The sale is cancelled. Revenue and the debt both come back off.</td>
+        </tr>
+        <tr>
+          <td><strong>The invoice was right, the customer will not pay</strong></td>
+          <td><strong>Write off balance</strong>, with a reason</td>
+          <td>The sale stays — it happened. The debt becomes a bad debt, which is a cost of the business.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Both need a reason, both are permanent, and both stay visible. Writing off is deliberately a
+    separate act from voiding, because a company that writes off a lot of debt is telling you
+    something about its customers, and that should show in the accounts rather than disappear.
+  </p>
+
+  <h3>4.10 When you get something wrong</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:230px">What happened</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>The invoice is still a draft</td><td>Delete it, fix the student records, generate again.</td></tr>
+        <tr><td>It is issued but nothing is paid</td><td>Void it with a reason, then raise a corrected one.</td></tr>
+        <tr><td>It is issued and part paid</td><td>Void the receipts first, then the invoice. The system will not let you do it the other way round.</td></tr>
+        <tr><td>A receipt was entered for the wrong amount</td><td>Void the receipt and enter it again. The invoices it had settled reopen automatically.</td></tr>
+        <tr><td>A cheque bounced</td><td>Void the receipt, giving that as the reason. The debt comes back.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note stop">
+    <span class="note-title">Nothing issued is ever deleted</span>
+    <p>
+      Once an invoice or receipt has been issued it stays on the record for good. Corrections are
+      made by <em>reversing</em> — the system writes an equal and opposite entry and keeps both,
+      with your name and reason on it. This is ordinary accounting practice, and it is the
+      mechanism behind the promise in §1: an entry that can vanish is an entry that can be lost.
+    </p>
+  </div>
+
+  <h3>4.11 Seeing who owes what</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:250px">Question</th><th>Where to look</th></tr></thead>
+      <tbody>
+        <tr><td>What does this one company owe?</td><td>Their page — invoices, receipts, running balance.</td></tr>
+        <tr><td>Who is overdue, and by how long?</td><td>Receivables ageing report.</td></tr>
+        <tr><td>How much did we bill and collect this month?</td><td>Billing against collection report, with a collection rate per company.</td></tr>
+        <tr><td>Has anything been missed this month?</td><td>The dashboard's attention panel names companies not yet invoiced.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §5 ═══ -->
+<section id="s5">
+  <div class="sec-num">§5</div>
+  <h2>Recording what you spend</h2>
+  <p class="sec-note">
+    Money going out, entered the same way regardless of what it is for.
+  </p>
+
+  <div class="roles"><span class="roles-label">Who</span><span class="chip chip-acct">Accountant</span></div>
+
+  <h3>5.1 Any cost at all</h3>
+  <p><span class="path">Expenses → Record expense</span></p>
+
+  <div class="split">
+    <div>
+      <span class="split-label">You enter</span>
+      <ul>
+        <li><strong>What it was for</strong> — picked from a plain list: office rent, fuel, SIM cards, and so on</li>
+        <li><strong>Which department</strong> paid for it</li>
+        <li><strong>Is it for eTrackify, or for the company generally?</strong></li>
+        <li><strong>How much</strong>, and <strong>paid now or on credit</strong></li>
+      </ul>
+    </div>
+    <div>
+      <span class="split-label">The system does</span>
+      <p>
+        Files it to the right account, takes it out of the bank if it was paid, or records it as
+        owed to a supplier if it was not. The eTrackify-or-general question is the one that lets
+        the reports say whether the project itself makes money, separately from the cost of
+        running the company.
+      </p>
+    </div>
+  </div>
+
+  <h3>5.2 The costs that run themselves</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:190px">Cost</th><th>How it gets in</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Salaries</strong></td>
+          <td><span class="path">Payroll → Prepare run</span> pulls in every employee at their standard pay. Adjust any line for overtime or a bonus, approve, and post. Each employee can be given a payslip.</td>
+        </tr>
+        <tr>
+          <td><strong>Equipment wearing out</strong></td>
+          <td>Anything bought that lasts — a laptop, a vehicle, tracking devices — is recorded as an asset and its cost spread over the months it is used, one button a month.</td>
+        </tr>
+        <tr>
+          <td><strong>Cyber Gate's share</strong></td>
+          <td>Calculated by the system at month end. See §6.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §6 ═══ -->
+<section id="s6">
+  <div class="sec-num">§6</div>
+  <h2>Closing the month</h2>
+  <p class="sec-note">
+    Once everything for the month is in, this is the whole of it. Do it in order — each step uses
+    the figures the step above it produced.
+  </p>
+
+  <div class="roles"><span class="roles-label">Who</span><span class="chip chip-acct">Accountant</span></div>
+
+  <ol class="steps">
+    <li>
+      <strong>Check the student register is up to date.</strong> Everyone who joined or left this
+      month must be recorded with the right dates. The invoices are built from this, so it comes
+      first.
+    </li>
+    <li><strong>Generate the month</strong> and <strong>issue the invoices</strong> (§4.1–4.3).</li>
+    <li><strong>Record every receipt</strong> that came in (§4.4).</li>
+    <li><strong>Record every cost</strong>, including supplier bills you have not paid yet. A cost left out makes the profit look bigger than it is, and the partners are about to be paid out of that profit.</li>
+    <li><strong>Run payroll</strong> and <strong>run depreciation</strong> — one button each.</li>
+    <li>
+      <strong>Post Cyber Gate's share.</strong> <span class="path">Revenue share → Prepare this period</span>.
+      The screen shows the revenue, the percentage, the share, and what ALLVA keeps. Press post.
+      This must come after steps 2–5, because it is calculated from them.
+    </li>
+    <li>
+      <strong>Check the books.</strong> Three reports, three green answers: trial balance balanced,
+      balance sheet balanced, cash flow with nothing unexplained. If any of them complains, sort it
+      out before going on.
+    </li>
+    <li>
+      <strong>Close the period.</strong> <span class="path">Periods → Close</span>. The month is now
+      fixed and cannot drift.
+    </li>
+  </ol>
+
+  <div class="note">
+    <span class="note-title">If it refuses to close</span>
+    <p>
+      There is an unposted draft entry sitting in the month, and the system tells you how many. An
+      entry left in limbo in a closed month is precisely the lost item this system exists to
+      prevent. Post them or delete them, then close.
+    </p>
+  </div>
+
+  <h3>6.1 Paying the partners</h3>
+  <p>
+    Not monthly. When the partners decide to take profit out — usually each quarter or once a year —
+    the accountant runs <span class="path">Distributions → New distribution</span> for the period
+    they agreed, optionally holds some back in the company, and posts it. Each partner is then paid
+    from their own row as the money goes out.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §7 ═══ -->
+<section id="s7">
+  <div class="sec-num">§7</div>
+  <h2>A full month, worked through</h2>
+  <p class="sec-note">
+    One bus company, three buses, 120 students, at 4,000 IQD per student per month. Every figure
+    below is exact and every one follows from the one above it.
+  </p>
+
+  <h3>The customer</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Bus company</th><th>Code</th><th>Terms</th><th class="num">Buses</th><th class="num">Students</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Al-Noor Transport</strong></td><td><code>BC-001</code></td><td>15 days</td><td class="num">3</td><td class="num">120</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Step 1 · The invoice, 31 August 2026</h3>
+  <p>
+    The accountant opens <span class="path">Invoices → Generate month</span>, picks August 2026, and
+    presses the button. The system counts the students on each bus and produces this:
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Bus</th><th class="num">Students</th><th class="num">Months</th><th class="num">Rate</th><th class="num">Amount</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Karrada — morning</td><td class="num">45</td><td class="num">1.00</td><td class="num">4,000</td><td class="num">180,000</td></tr>
+        <tr><td>Mansour — morning</td><td class="num">40</td><td class="num">1.00</td><td class="num">4,000</td><td class="num">160,000</td></tr>
+        <tr><td>Jadriya — afternoon</td><td class="num">35</td><td class="num">1.00</td><td class="num">4,000</td><td class="num">140,000</td></tr>
+        <tr class="total"><td colspan="4">Invoice <code>INV-2026-00014</code> · issued 31 Aug · due 15 Sep</td><td class="num">480,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    The accountant presses <strong>Issue</strong>, then <strong>Print</strong>, and emails the PDF to
+    Al-Noor Transport. As far as the accounts are concerned, ALLVA has now <em>earned</em> 480,000
+    in August and Al-Noor <em>owes</em> 480,000. No money has moved yet.
+  </p>
+
+  <div class="note">
+    <span class="note-title">If one student had joined mid-month</span>
+    <p>
+      Say a 121st student joined Al-Noor on 16 September, a 30-day month. They were carried for 15
+      of those 30 days, so September's invoice charges 15 ÷ 30 × 4,000 = <strong>2,000 IQD</strong>
+      for them, and the invoice line says so. Nobody calculates this by hand; it falls out of the
+      date entered when they were enrolled.
+    </p>
+  </div>
+
+  <h3>Step 2 · August's costs</h3>
+  <p>
+    Through the month the accountant has been entering costs as they arose, and the month-end
+    buttons add the rest. For August, against this project:
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Cost</th><th>Entered by</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Cyber Gate's share of the project</td><td>The system, at month end</td><td class="num">240,000</td></tr>
+        <tr><td>SIM cards and mobile data, 3 devices</td><td>Accountant, as a supplier bill</td><td class="num">18,000</td></tr>
+        <tr><td>Cloud hosting, this project's share</td><td>Accountant, as a supplier bill</td><td class="num">12,000</td></tr>
+        <tr class="sub"><td colspan="2">Direct costs of delivering the service</td><td class="num">270,000</td></tr>
+        <tr><td>Field and operations salaries, this project's share</td><td>The payroll run</td><td class="num">90,000</td></tr>
+        <tr><td>Office rent, this project's share</td><td>Accountant</td><td class="num">20,000</td></tr>
+        <tr><td>Internet and telephone, this project's share</td><td>Accountant</td><td class="num">10,000</td></tr>
+        <tr><td>Tracking devices wearing out over three years</td><td>The depreciation run</td><td class="num">10,000</td></tr>
+        <tr class="sub"><td colspan="2">Cost of running the company</td><td class="num">130,000</td></tr>
+        <tr class="total"><td colspan="2">All costs</td><td class="num">400,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tbl-cap">
+    Shares of salary, rent and internet are the portions the system allocates to eTrackify; the rest
+    of each belongs to other work. That allocation is a setting, not a judgement call made monthly.
+  </p>
+
+  <h3>Step 3 · Where the 480,000 goes</h3>
+
+  <div class="flow" role="img" aria-label="Waterfall of August 2026: 480,000 invoiced, 240,000 to Cyber Gate, 30,000 direct costs, 130,000 operating costs, 80,000 net profit, 16,000 to each of five partners.">
+    <div class="flow-band head">
+      <div class="who">Where it goes</div>
+      <div></div>
+      <div class="amt">IQD</div>
+    </div>
+    <div class="flow-band">
+      <div class="who">Invoiced to Al-Noor<small>120 students × 4,000</small></div>
+      <div class="bar b-rev"><span style="width:100%"></span></div>
+      <div class="amt">480,000</div>
+    </div>
+    <div class="flow-band">
+      <div class="who">Cyber Gate takes 50%<small>of gross revenue, before ALLVA's costs</small></div>
+      <div class="bar b-cg"><span style="width:50%"></span></div>
+      <div class="amt">−240,000</div>
+    </div>
+    <div class="flow-band">
+      <div class="who">SIM cards and hosting<small>direct cost of the service</small></div>
+      <div class="bar b-cost"><span style="width:6.25%"></span></div>
+      <div class="amt">−30,000</div>
+    </div>
+    <div class="flow-band rule-top">
+      <div class="who">Gross profit</div>
+      <div class="bar b-keep"><span style="width:43.75%"></span></div>
+      <div class="amt">210,000</div>
+    </div>
+    <div class="flow-band">
+      <div class="who">Running the company<small>salaries, rent, internet, depreciation</small></div>
+      <div class="bar b-cost"><span style="width:27.08%"></span></div>
+      <div class="amt">−130,000</div>
+    </div>
+    <div class="flow-band rule-top">
+      <div class="who"><strong>Net profit for August</strong></div>
+      <div class="bar b-keep"><span style="width:16.67%"></span></div>
+      <div class="amt"><strong>80,000</strong></div>
+    </div>
+    <div class="flow-band">
+      <div class="who">Each partner's 20%<small>five partners, 16,000 each</small></div>
+      <div class="bar b-part"><span style="width:3.33%"></span></div>
+      <div class="amt">16,000</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="note-title">Read the two big numbers together</span>
+    <p>
+      Cyber Gate's 240,000 is half of the <em>revenue</em>. The partners' 80,000 is what is left of
+      ALLVA's own half after ALLVA has paid every cost of the business — 160,000 of the 240,000.
+      The two halves are not comparable, and this is the single most consequential thing in the
+      whole document: it is the arrangement described in §10.1, and if the agreement with Cyber
+      Gate actually means something else, every figure below the first line changes.
+    </p>
+  </div>
+
+  <h3>Step 4 · Al-Noor pays, in two parts</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Receipt</th><th>Method</th><th class="num">Received</th><th class="num">Invoice balance after</th><th>Invoice status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>8 Sep 2026</td><td><code>RCP-2026-00021</code></td><td>Bank transfer</td>
+          <td class="num">300,000</td><td class="num">180,000</td><td>Part paid</td>
+        </tr>
+        <tr>
+          <td>22 Sep 2026</td><td><code>RCP-2026-00027</code></td><td>Cash</td>
+          <td class="num">180,000</td><td class="num">0</td><td>Paid</td>
+        </tr>
+        <tr class="total"><td colspan="3">Collected against <code>INV-2026-00014</code></td><td class="num">480,000</td><td class="num">0</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    On <strong>8 September</strong> the accountant records the transfer, applies it to the invoice,
+    and prints <code>RCP-2026-00021</code> — it states 300,000 received, "Three hundred thousand
+    Iraqi Dinars only", the invoice it settled, and 180,000 still outstanding. Al-Noor's invoice sits
+    in the unpaid list at its original due date of 15 September.
+  </p>
+  <p>
+    That due date passes with 180,000 still owing, so the invoice moves to <strong>Overdue</strong>
+    and shows on the dashboard and in the 1–30 day bucket of the ageing report. On
+    <strong>22 September</strong> Al-Noor's driver brings the balance in cash. The accountant records
+    it and prints <code>RCP-2026-00027</code>, which says the account is now settled in full, and
+    hands it over with the money still on the desk.
+  </p>
+
+  <div class="note ok">
+    <span class="note-title">The cash arriving in September does not change August's profit</span>
+    <p>
+      August earned 480,000 because the service was delivered in August, and that is the month the
+      profit belongs to. The two receipts in September turn a debt into cash — they move money from
+      "owed to us" into the bank. This is why the profit report and the bank balance rarely agree,
+      and why both exist.
+    </p>
+  </div>
+
+  <h3>Step 5 · Cyber Gate is paid</h3>
+  <p>
+    The 240,000 has been sitting as an amount owed to Cyber Gate since the accountant posted the
+    share at August month-end. When ALLVA actually transfers it, the accountant records the payment
+    on the revenue share screen and the liability clears.
+  </p>
+
+  <h3>Step 6 · The partners are paid</h3>
+  <p>
+    At the end of the quarter the partners agree to distribute. The accountant opens
+    <span class="path">Distributions → New distribution</span>, sets the period, and the system
+    proposes this from the ledger — here shown for August alone:
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Partner</th><th class="num">Ownership</th><th class="num">Share of 80,000</th></tr></thead>
+      <tbody>
+        <tr><td>Partner 1</td><td class="num">20%</td><td class="num">16,000</td></tr>
+        <tr><td>Partner 2</td><td class="num">20%</td><td class="num">16,000</td></tr>
+        <tr><td>Partner 3</td><td class="num">20%</td><td class="num">16,000</td></tr>
+        <tr><td>Partner 4</td><td class="num">20%</td><td class="num">16,000</td></tr>
+        <tr><td>Partner 5</td><td class="num">20%</td><td class="num">16,000</td></tr>
+        <tr class="total"><td>Declared</td><td class="num">100%</td><td class="num">80,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tbl-cap">
+    The system holds each partner's real name; they are numbered here only because this document is
+    an example. Ownership percentages are data on each partner's record, not a rule in the code.
+  </p>
+
+  <p>
+    The accountant presses <strong>Declare and post</strong>, and each partner is then paid from
+    their own row as the money leaves the bank. Until they are paid, the amount shows as owed to
+    them — and each partner can see their own figure when they log in.
+  </p>
+
+  <div class="note">
+    <span class="note-title">Where the odd dinar goes</span>
+    <p>
+      80,000 divides by five exactly. When it does not — and most months it will not — the system
+      splits it so the five shares add back to the declared total to the dinar, giving the leftover
+      unit to the largest fraction. Five shares that add up to one dinar less than what was declared
+      would be exactly the kind of small unexplained gap this system exists to prevent.
+    </p>
+  </div>
+
+  <h3>What the operator actually did, all month</h3>
+  <div class="split">
+    <div>
+      <span class="split-label">The whole of the human work</span>
+      <ol>
+        <li>Kept the student list current as children joined and left</li>
+        <li>Pressed <strong>Generate month</strong>, glanced at the preview, pressed <strong>Issue all</strong></li>
+        <li>Emailed the invoice</li>
+        <li>Recorded two receipts and printed two receipts</li>
+        <li>Entered the month's bills</li>
+        <li>Pressed payroll, depreciation, revenue share, close</li>
+      </ol>
+    </div>
+    <div>
+      <span class="split-label">What the system did without being asked</span>
+      <ol>
+        <li>Counted 120 students across 3 buses and priced them</li>
+        <li>Made every ledger entry listed in Appendix B, each one in balance</li>
+        <li>Worked out Cyber Gate's 240,000 and set it aside as owed</li>
+        <li>Tracked 480,000 from owed, to part paid, to settled</li>
+        <li>Aged the overdue balance and flagged it on the dashboard</li>
+        <li>Arrived at 80,000 net profit and divided it five ways to the dinar</li>
+      </ol>
+    </div>
+  </div>
+  <p>
+    At no point did anyone type an account code, decide which account a figure belonged in, or work
+    out a percentage. That is the division this document is arguing for, and Appendix B lists every
+    entry the right-hand column made, for the auditor who will want to check it.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §8 ═══ -->
+<section id="s8">
+  <div class="sec-num">§8</div>
+  <h2>What a partner sees</h2>
+  <p class="sec-note">
+    Each of the five partners has their own login. They read; they do not enter anything. This is
+    what is on their screen.
+  </p>
+
+  <h3>The moment they log in</h3>
+  <p>Four figures across the top of the dashboard, for the month so far:</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="k">Revenue this month</span>
+      <span class="v money">480,000</span>
+      <span class="d">What the company earned, and whether that is up or down on last month.</span>
+    </div>
+    <div class="card">
+      <span class="k">Net profit this month</span>
+      <span class="v money">80,000</span>
+      <span class="d">After every cost, including Cyber Gate's share. The number their own share comes out of.</span>
+    </div>
+    <div class="card">
+      <span class="k">Cash and bank</span>
+      <span class="v money">—</span>
+      <span class="d">What is actually in the accounts today, across cash and every bank account.</span>
+    </div>
+    <div class="card">
+      <span class="k">Owed by customers</span>
+      <span class="v money">180,000</span>
+      <span class="d">What bus companies have not yet paid. Turns red if anything is more than 90 days old.</span>
+    </div>
+  </div>
+
+  <p>
+    Below that, their <strong>own share for the year to date</strong> — what they have earned, what
+    has been paid to them, and what is still owed to them — beside the same figures for the other
+    four, because a partnership in which each partner can only see their own number is not
+    transparency.
+  </p>
+
+  <h3>What they can open</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:230px">Screen</th><th>What it answers</th></tr></thead>
+      <tbody>
+        <tr><td><strong>My distributions</strong></td><td>What have I earned, what have I been paid, what am I still owed, and for which months.</td></tr>
+        <tr><td><strong>Income statement</strong></td><td>Was the company profitable this month, this quarter, this year — and how does that compare with last.</td></tr>
+        <tr><td><strong>Balance sheet</strong></td><td>What the company owns and owes on a given date.</td></tr>
+        <tr><td><strong>Cash flow</strong></td><td>Profit looks healthy — so where did the money actually go.</td></tr>
+        <tr><td><strong>Revenue split</strong></td><td>What Cyber Gate has taken, month by month, and on what basis.</td></tr>
+        <tr><td><strong>Project profitability</strong></td><td>Does eTrackify itself make money, once a fair share of company overhead is charged to it.</td></tr>
+        <tr><td><strong>Invoices and receipts</strong></td><td>Every individual invoice and every payment, down to the student-by-student detail.</td></tr>
+        <tr><td><strong>Expenses and payroll</strong></td><td>Every cost the company has incurred, by category and by department.</td></tr>
+        <tr><td><strong>Receivables ageing</strong></td><td>Which customers are behind, and by how long.</td></tr>
+        <tr><td><strong>Audit trail</strong></td><td>Who did what, when, and why — including who changed a price and who reversed an entry.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>What they cannot do</h3>
+  <p>
+    A partner cannot create, edit, post, issue, void, or delete anything at all. The screens that
+    do those things are not merely hidden from them — the system refuses the request. They also
+    cannot change the price list, add users, or alter settings.
+  </p>
+
+  <div class="note ok">
+    <span class="note-title">Why partners can read the audit trail</span>
+    <p>
+      Deliberately, and it is worth stating plainly to the partners themselves. Seeing every entry
+      but not who made it, or what was quietly changed afterwards, is not visibility of the
+      company's financial activity. The audit trail is what turns the promise in §1 into something
+      a partner can verify rather than take on trust.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════ §9 ═══ -->
+<section id="s9">
+  <div class="sec-num">§9</div>
+  <h2>Who can do what</h2>
+  <p class="sec-note">
+    Four roles, separated on purpose. These are not ranks — an administrator is not senior to an
+    accountant, they do a different job.
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Can…</th>
+          <th class="mid">Accountant</th><th class="mid">Administrator</th>
+          <th class="mid">Operations</th><th class="mid">Partner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Register companies, buses, students</td><td class="mid tick">✓</td><td class="mid tick">✓</td><td class="mid tick">✓</td><td class="mid cross">—</td></tr>
+        <tr><td>Generate and issue invoices</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>Record receipts and print them</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>Record expenses, run payroll</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>Post the revenue share and distributions</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>Close and reopen a month</td><td class="mid tick">✓</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>See any financial figure at all</td><td class="mid tick">✓</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid tick">✓</td></tr>
+        <tr><td>Read every report</td><td class="mid tick">✓</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid tick">✓</td></tr>
+        <tr><td>Set the price per student</td><td class="mid cross">—</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>Add users and change settings</td><td class="mid cross">—</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid cross">—</td></tr>
+        <tr><td>Read the audit trail</td><td class="mid tick">✓</td><td class="mid tick">✓</td><td class="mid cross">—</td><td class="mid tick">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="note-title">Two separations that matter</span>
+    <p>
+      <strong>Operations sees no money.</strong> The person entering a hundred students has no
+      business seeing what the company earns, and their dashboard is a different page with no
+      figures on it.
+    </p>
+    <p style="margin-top:10px">
+      <strong>The administrator cannot post.</strong> Whoever can change the price should not also
+      be the person entering the invoices that use it. If one person genuinely has to do both, give
+      them two logins rather than merging the roles.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════════════════════ §10 ═══ -->
+<section id="s10">
+  <div class="sec-num">§10</div>
+  <h2>Three decisions still open</h2>
+  <p class="sec-note">
+    Each changes the numbers. The system does both answers to each and ships with one chosen — but a
+    default is an assumption, not a decision. These should be settled before the first real month is
+    accounted for.
+  </p>
+
+  <h3>10.1 What Cyber Gate's 50% is 50% of</h3>
+  <div class="split">
+    <div>
+      <span class="split-label">Half of revenue <em>— currently set</em></span>
+      <p>
+        Cyber Gate takes 240,000 of the 480,000 before any of ALLVA's costs. ALLVA's 400,000 of
+        costs then come out of its own 240,000, leaving 80,000 for the partners.
+      </p>
+    </div>
+    <div>
+      <span class="split-label">Half of profit</span>
+      <p>
+        Costs come off first. On the same month, 480,000 less 160,000 of ALLVA's own costs leaves
+        320,000, split 160,000 each — and the partners get 160,000, not 80,000.
+      </p>
+    </div>
+  </div>
+  <p>
+    <strong>The difference in the worked example is 80,000 IQD a month on one customer.</strong> This
+    is the most consequential open item in the document and should be confirmed against the signed
+    agreement with Cyber Gate, not assumed.
+  </p>
+
+  <h3>10.2 Part months</h3>
+  <p>When a student joins or leaves partway through a month, the customer is charged:</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:190px">Option</th><th>A student carried 15 days of 30 pays</th></tr></thead>
+      <tbody>
+        <tr><td><strong>By the day</strong> <span style="color:var(--ok)">— currently set</span></td><td class="num" style="text-align:left">2,000 — exactly the days they travelled</td></tr>
+        <tr><td>A full month regardless</td><td class="num" style="text-align:left">4,000 — present for a day, pay for the month</td></tr>
+        <tr><td>Half or whole month</td><td class="num" style="text-align:left">2,000 — half, because they were there half the month or less</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Whichever is chosen applies to every bus company alike, and is printed on the invoice.</p>
+
+  <h3>10.3 The summer</h3>
+  <p>
+    Whether July and August are billed is set per school year. The system currently bills
+    <strong>all twelve months</strong>. If service genuinely stops over the summer, the year should
+    be set to pause, and those months are then skipped rather than billed at zero.
+  </p>
+
+  <h3>10.4 A fourth question this edition raises</h3>
+  <div class="note warn">
+    <span class="note-title">Late fees</span>
+    <p>
+      §4.8 tracks overdue invoices but does not charge for them. There is an account waiting for
+      late payment fees, but nothing calculates one, because it is not settled whether ALLVA charges
+      them, at what rate, or after how many days. If the answer is that late fees should be charged
+      as a matter of course, that is a small addition and should be specified here rather than left
+      to whoever is chasing the payment.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════════════════════ App A ═══ -->
+<section id="a">
+  <div class="sec-num">Appendix A</div>
+  <h2>Chart of accounts</h2>
+  <p class="sec-note">
+    Back-end reference. No operator ever types one of these codes — the system chooses the account
+    from what you entered in plain words. They are set down here for the accountant and the auditor.
+  </p>
+
+  <div class="appendix-body">
+
+  <p>
+    Seventy-three accounts in nine classes. The class number tells you what kind of thing an account
+    is, and the reports are built from the classes, not from individual accounts, so adding a
+    sub-account inside a class never breaks a report.
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:90px">Class</th><th style="width:200px">What it holds</th><th>In plain words</th></tr></thead>
+      <tbody>        <tr><td class="num">1000</td><td><strong>Assets</strong></td><td>What the company owns or is owed</td></tr>
+        <tr><td class="num">2000</td><td><strong>Liabilities</strong></td><td>What the company owes</td></tr>
+        <tr><td class="num">3000</td><td><strong>Equity</strong></td><td>The partners’ stake</td></tr>
+        <tr><td class="num">4000</td><td><strong>Revenue</strong></td><td>What the company earns</td></tr>
+        <tr><td class="num">5000</td><td><strong>Direct costs</strong></td><td>Costs that exist only because of the revenue</td></tr>
+        <tr><td class="num">6000</td><td><strong>Payroll</strong></td><td>The cost of employing people</td></tr>
+        <tr><td class="num">7000</td><td><strong>Office and administrative</strong></td><td>The cost of having an office</td></tr>
+        <tr><td class="num">8000</td><td><strong>Vehicles</strong></td><td>The cost of running vehicles</td></tr>
+        <tr><td class="num">9000</td><td><strong>Sales, marketing and other</strong></td><td>Everything else</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Accounts marked <strong>S</strong> are referenced by the posting engine by their code — these
+    are the ones the automatic entries in Appendix B point at. Their names can be changed; their
+    codes cannot, because renumbering one would silently send automatic entries somewhere else.
+  </p>
+
+  <h3>1000 · Assets</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1010</td><td>Cash on hand</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">1020</td><td>Bank accounts</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">1030</td><td>Accounts receivable — bus companies</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">1040</td><td>Prepaid expenses</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">1050</td><td>Employee advances</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">1060</td><td>Inventory — devices and spare parts</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">1110</td><td>Fixed assets — vehicles</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">1120</td><td>Fixed assets — office furniture and equipment</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">1130</td><td>Fixed assets — IT equipment and servers</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">1140</td><td>Intangible assets — software and licences</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">1190</td><td>Accumulated depreciation</td><td class="mid"><span class="tick">S</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2000 · Liabilities</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">2010</td><td>Accounts payable — suppliers</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">2020</td><td>Accrued salaries and wages</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">2030</td><td>Payroll taxes and social security payable</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">2040</td><td>Cyber Gate payable — 50% revenue share</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">2050</td><td>Partner distributions payable</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">2060</td><td>Deferred revenue — amounts billed in advance</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">2070</td><td>Loans and financing</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">2080</td><td>Other accrued liabilities</td><td class="mid"><span class="cross">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>3000 · Equity</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">3010</td><td>Partner capital — Partner 1</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">3020</td><td>Partner capital — Partner 2</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">3030</td><td>Partner capital — Partner 3</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">3040</td><td>Partner capital — Partner 4</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">3050</td><td>Partner capital — Partner 5</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">3060</td><td>Partner current accounts and drawings</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">3070</td><td>Retained earnings</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">3080</td><td>Current year profit</td><td class="mid"><span class="tick">S</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4000 · Revenue</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">4010</td><td>Student subscription revenue</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">4015</td><td>Late payment fees and penalties</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">4019</td><td>Revenue discounts and adjustments</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">4020</td><td>Device and hardware revenue</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">4030</td><td>Installation and setup fees</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">4090</td><td>Other operating income</td><td class="mid"><span class="cross">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5000 · Direct costs</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">5010</td><td>Cyber Gate revenue share — 50%</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">5020</td><td>Hardware and device cost</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">5030</td><td>SIM cards and mobile data</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">5040</td><td>Cloud hosting, servers and gateways</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">5050</td><td>Field installation and technician costs</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">5060</td><td>Device warranty and replacement</td><td class="mid"><span class="cross">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>6000 · Payroll</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">6010</td><td>Salaries — management</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">6020</td><td>Salaries — technical and development staff</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">6030</td><td>Salaries — sales and customer service</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">6040</td><td>Salaries — field and operations staff</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">6050</td><td>Bonuses and incentives</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">6060</td><td>Overtime</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">6070</td><td>Social security — employer contribution</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">6080</td><td>End-of-service and severance provision</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">6090</td><td>Staff transport, meals and allowances</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">6095</td><td>Recruitment and training</td><td class="mid"><span class="cross">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7000 · Office and administrative</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">7010</td><td>Office rent</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7020</td><td>Electricity, water and generator</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7030</td><td>Internet and telephone</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7040</td><td>Office supplies and stationery</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7050</td><td>Cleaning and hospitality</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7060</td><td>Office maintenance and repairs</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7070</td><td>Bank charges and transfer fees</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7080</td><td>Legal, audit and accounting fees</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7090</td><td>Government fees, licences and permits</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">7095</td><td>Insurance</td><td class="mid"><span class="cross">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8000 · Vehicles</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">8010</td><td>Fuel</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">8020</td><td>Vehicle maintenance and repairs</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">8030</td><td>Vehicle insurance</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">8040</td><td>Vehicle registration and government fees</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">8050</td><td>Vehicle depreciation</td><td class="mid"><span class="tick">S</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>9000 · Sales, marketing and other</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:78px">Code</th><th>Account</th><th style="width:56px" class="mid">Sys</th></tr></thead>
+      <tbody>
+        <tr><td class="num">9010</td><td>Advertising and digital marketing</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">9020</td><td>Printing, branding and promotional materials</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">9030</td><td>Travel and business trips</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">9040</td><td>Meetings and client entertainment</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">9050</td><td>Software subscriptions and tools</td><td class="mid"><span class="cross">—</span></td></tr>
+        <tr><td class="num">9060</td><td>Depreciation — non-vehicle assets</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">9070</td><td>Amortisation — software and intangibles</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">9080</td><td>Bad debt written off</td><td class="mid"><span class="tick">S</span></td></tr>
+        <tr><td class="num">9090</td><td>Miscellaneous expenses</td><td class="mid"><span class="tick">S</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Sub-accounts may be added inside any class as the business grows. The class numbering itself is
+    fixed and should not be reorganised — it is the structure every report reads.
+  </p>
+
+  </div>
+  <a class="back" href="#s1">↑ Back to the top</a>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════════════════════ App B ═══ -->
+<section id="b">
+  <div class="sec-num">Appendix B</div>
+  <h2>Every automatic entry</h2>
+  <p class="sec-note">
+    Back-end reference. This is the whole of what §4 to §6 do underneath — every action an operator
+    takes, and the ledger entry it produces. Amounts shown are August 2026 from the worked example
+    in §7.
+  </p>
+
+  <div class="appendix-body">
+
+  <h3>B.1 · Issuing an invoice</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">The month has already been served — revenue is earned now</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">1030</span><span class="jrnl-name">Accounts receivable — bus companies</span><span class="jrnl-amt">480,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">4010</span><span class="jrnl-name">Student subscription revenue</span><span class="jrnl-amt">480,000</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">Billed in advance — the revenue is held back until its month arrives</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">1030</span><span class="jrnl-name">Accounts receivable — bus companies</span><span class="jrnl-amt">—</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">2060</span><span class="jrnl-name">Deferred revenue</span><span class="jrnl-amt">—</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">…and released when it does, on one button</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">2060</span><span class="jrnl-name">Deferred revenue</span><span class="jrnl-amt">—</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">4010</span><span class="jrnl-name">Student subscription revenue</span><span class="jrnl-amt">—</span></div>
+  </div>
+
+  <h3>B.2 · Recording a receipt</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">RCP-2026-00021 · 8 September · bank transfer</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">1020</span><span class="jrnl-name">Bank accounts (1010 if it was cash)</span><span class="jrnl-amt">300,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1030</span><span class="jrnl-name">Accounts receivable — bus companies</span><span class="jrnl-amt">300,000</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">RCP-2026-00027 · 22 September · cash</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">1010</span><span class="jrnl-name">Cash on hand</span><span class="jrnl-amt">180,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1030</span><span class="jrnl-name">Accounts receivable — bus companies</span><span class="jrnl-amt">180,000</span></div>
+  </div>
+  <p>
+    Voiding a receipt posts the exact opposite of the above and unapplies it from every invoice it
+    had settled, reopening those balances. Both entries stay on the record.
+  </p>
+
+  <h3>B.3 · A debt that will not be paid</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">Writing off an uncollectable balance — the sale stands, the debt does not</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">9080</span><span class="jrnl-name">Bad debt written off</span><span class="jrnl-amt">—</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1030</span><span class="jrnl-name">Accounts receivable — bus companies</span><span class="jrnl-amt">—</span></div>
+  </div>
+
+  <h3>B.4 · Costs</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">A cost paid straight away</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">7010</span><span class="jrnl-name">Office rent — or whichever account fits what you chose</span><span class="jrnl-amt">20,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1020</span><span class="jrnl-name">Bank accounts</span><span class="jrnl-amt">20,000</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">The same cost on credit — the supplier bill</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">5030</span><span class="jrnl-name">SIM cards and mobile data</span><span class="jrnl-amt">18,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">2010</span><span class="jrnl-name">Accounts payable — suppliers</span><span class="jrnl-amt">18,000</span></div>
+  </div>
+
+  <h3>B.5 · Payroll</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">Posting the month's payroll</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">6010–40</span><span class="jrnl-name">Salaries, by each employee's own account</span><span class="jrnl-amt">90,000</span></div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">6070</span><span class="jrnl-name">Social security — employer contribution</span><span class="jrnl-amt">—</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">2020</span><span class="jrnl-name">Accrued salaries — net pay</span><span class="jrnl-amt">—</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">2030</span><span class="jrnl-name">Payroll taxes and social security payable</span><span class="jrnl-amt">—</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">Paying the salaries</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">2020</span><span class="jrnl-name">Accrued salaries and wages</span><span class="jrnl-amt">—</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1020</span><span class="jrnl-name">Bank accounts</span><span class="jrnl-amt">—</span></div>
+  </div>
+
+  <h3>B.6 · Equipment wearing out</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">One month of depreciation on the tracking devices</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">9060</span><span class="jrnl-name">Depreciation — non-vehicle assets</span><span class="jrnl-amt">10,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1190</span><span class="jrnl-name">Accumulated depreciation</span><span class="jrnl-amt">10,000</span></div>
+  </div>
+
+  <h3>B.7 · Cyber Gate's share</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">Posting the share — a direct cost of the project, and a debt to Cyber Gate</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">5010</span><span class="jrnl-name">Cyber Gate revenue share — 50%</span><span class="jrnl-amt">240,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">2040</span><span class="jrnl-name">Cyber Gate payable</span><span class="jrnl-amt">240,000</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">Paying it</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">2040</span><span class="jrnl-name">Cyber Gate payable</span><span class="jrnl-amt">240,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1020</span><span class="jrnl-name">Bank accounts</span><span class="jrnl-amt">240,000</span></div>
+  </div>
+  <p>A loss produces no share. Cyber Gate does not fund ALLVA's losses.</p>
+
+  <h3>B.8 · Paying the partners</h3>
+  <div class="jrnl">
+    <div class="jrnl-head">Declaring the distribution</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">3060</span><span class="jrnl-name">Partner current accounts and drawings</span><span class="jrnl-amt">80,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">2050</span><span class="jrnl-name">Partner distributions payable</span><span class="jrnl-amt">80,000</span></div>
+  </div>
+  <div class="jrnl">
+    <div class="jrnl-head">Paying one partner</div>
+    <div class="jrnl-row dr"><span class="jrnl-dc">DR</span><span class="jrnl-code">2050</span><span class="jrnl-name">Partner distributions payable</span><span class="jrnl-amt">16,000</span></div>
+    <div class="jrnl-row cr"><span class="jrnl-dc">CR</span><span class="jrnl-code">1020</span><span class="jrnl-name">Bank accounts</span><span class="jrnl-amt">16,000</span></div>
+  </div>
+
+  <div class="note">
+    <span class="note-title">Drawings, not capital</span>
+    <p>
+      Distributions are charged to 3060, never against a partner's capital account. Capital is what
+      a partner put <em>in</em>; taking profit out must not read in the accounts as reducing it.
+    </p>
+  </div>
+
+  <h3>B.9 · The rules the ledger enforces</h3>
+  <p>
+    These are refusals, not warnings — the entry does not go through. An operator following §2 to
+    §6 will rarely meet one, because the system fills these fields in for them.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:270px">The rule</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Debits must equal credits</td><td>The definition of a valid entry.</td></tr>
+        <tr><td>The month must be open</td><td>A closed month is settled; it does not move.</td></tr>
+        <tr><td>A cost account needs a department and a project</td><td>Without them, project profitability cannot be worked out at all.</td></tr>
+        <tr><td>Nothing may be posted to a heading account</td><td>Headings are for grouping in reports, not for holding money.</td></tr>
+        <tr><td>One side per line</td><td>A line that is both a debit and a credit cannot be read.</td></tr>
+        <tr><td>A posted entry cannot be deleted, only reversed</td><td>The promise in §1.</td></tr>
+        <tr><td>A reversal cannot itself be reversed</td><td>Post a fresh entry instead; otherwise the trail becomes unreadable.</td></tr>
+        <tr><td>A month with unposted drafts cannot be closed</td><td>An unposted entry stranded in a closed month is exactly the lost item this system prevents.</td></tr>
+        <tr><td>A receipt cannot be applied for more than an invoice owes</td><td>It would create a balance that does not exist.</td></tr>
+        <tr><td>Rate changes, reversals, voids and reopenings need a reason</td><td>They go into the audit trail, and a reason given a year later is worthless.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  </div>
+  <a class="back" href="#s1">↑ Back to the top</a>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════════════════════ App C ═══ -->
+<section id="c">
+  <div class="sec-num">Appendix C</div>
+  <h2>Numbering and statuses</h2>
+  <p class="sec-note">Back-end reference.</p>
+
+  <div class="appendix-body">
+
+  <h3>C.1 · Document numbers</h3>
+  <p>
+    Issued automatically, in sequence, restarting each calendar year. A number is consumed when the
+    document is created and is never reused, so a gap in the sequence is itself information.
+  </p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:230px">Document</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr><td>Invoice</td><td><code>INV-2026-00014</code></td></tr>
+        <tr><td>Receipt</td><td><code>RCP-2026-00021</code></td></tr>
+        <tr><td>Expense</td><td><code>EXP-2026-00087</code></td></tr>
+        <tr><td>Journal entry</td><td><code>JV-2026-00312</code></td></tr>
+        <tr><td>Payroll run</td><td><code>PR-2026-0008</code></td></tr>
+        <tr><td>Revenue share run</td><td><code>RS-2026-0008</code></td></tr>
+        <tr><td>Distribution</td><td><code>DIST-2026-0003</code></td></tr>
+        <tr><td>Depreciation run</td><td><code>DEP-2026-0008</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>C.2 · Invoice statuses</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:150px">Status</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Draft</strong></td><td>Generated but not issued. Has not touched the accounts. Can be deleted.</td></tr>
+        <tr><td><strong>Issued</strong></td><td>Posted. The customer owes it. Cannot be edited, only voided.</td></tr>
+        <tr><td><strong>Part paid</strong></td><td>Some money has been applied; a balance remains.</td></tr>
+        <tr><td><strong>Paid</strong></td><td>Settled in full.</td></tr>
+        <tr><td><strong>Overdue</strong></td><td>Issued or part paid, and past its due date. A view rather than a state.</td></tr>
+        <tr><td><strong>Void</strong></td><td>Cancelled with a reason; the entry was reversed. Stays visible.</td></tr>
+        <tr><td><strong>Written off</strong></td><td>The sale stands; the debt was given up as uncollectable.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>C.3 · Month statuses</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:150px">Status</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Open</strong></td><td>Entries can be posted into it.</td></tr>
+        <tr><td><strong>Closed</strong></td><td>Refuses new entries. An accountant or administrator can reopen it, with a reason that is recorded.</td></tr>
+        <tr><td><strong>Locked</strong></td><td>Permanent. Never reopens. Used once a year has been audited.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>C.4 · What the audit trail keeps</h3>
+  <p>
+    Every action, against the user, with the date and time. Nothing in it can be edited or deleted
+    by anyone, including an administrator. Alongside every posting and reversal it records price
+    changes with their reason, ownership changes with their reason and effective date, role changes
+    and deactivations, each settings change individually, month closures and reopenings, and
+    sign-ins.
+  </p>
+
+  </div>
+  <a class="back" href="#s1">↑ Back to the top</a>
+</section>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════════════════════════ App D ═══ -->
+<section id="d">
+  <div class="sec-num">Appendix D</div>
+  <h2>The reports</h2>
+  <p class="sec-note">
+    Seventeen. Each filters by date range, project and department, and exports to a spreadsheet.
+    Reports show posted entries only — a draft is invisible to them.
+  </p>
+
+  <div class="appendix-body">
+
+  <h3>Statutory and core</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:240px">Report</th><th>Reach for it when</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Income statement</strong></td><td>You want profit for a period, by month, quarter or year.</td></tr>
+        <tr><td><strong>Balance sheet</strong></td><td>You want the position on a date. It states explicitly that it balances.</td></tr>
+        <tr><td><strong>Cash flow statement</strong></td><td>Profit looks healthy and the bank does not.</td></tr>
+        <tr><td><strong>Trial balance</strong></td><td>Checking the books balance, or hunting a discrepancy account by account.</td></tr>
+        <tr><td><strong>General ledger detail</strong></td><td>You need every movement on one account with a running balance.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Project and revenue</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:240px">Report</th><th>Reach for it when</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Project profitability</strong></td><td>Asking whether eTrackify itself makes money, with overhead fairly allocated.</td></tr>
+        <tr><td><strong>Revenue split</strong></td><td>Showing Cyber Gate their share, month by month, with the basis stated.</td></tr>
+        <tr><td><strong>Monthly recurring revenue</strong></td><td>Tracking students × rate against what was actually invoiced.</td></tr>
+        <tr><td><strong>Active student count</strong></td><td>Per company, per bus, per month, with joins and leaves.</td></tr>
+        <tr><td><strong>Rate history</strong></td><td>Proving which price applied to which period and which company.</td></tr>
+        <tr><td><strong>Billing against collection</strong></td><td>Invoiced, collected and outstanding per company per month, with a collection rate.</td></tr>
+        <tr><td><strong>Bus company statement</strong></td><td>Sending a customer their account.</td></tr>
+        <tr><td><strong>Academic year comparison</strong></td><td>One year against the next — rate, students, revenue, growth.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Partners and costs</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:240px">Report</th><th>Reach for it when</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Partner distribution</strong></td><td>A partner asks what they are owed — declared, paid, outstanding.</td></tr>
+        <tr><td><strong>Expense report</strong></td><td>Where the money goes, by account, department and month.</td></tr>
+        <tr><td><strong>Payroll report</strong></td><td>Staff cost per employee and per department.</td></tr>
+        <tr><td><strong>Receivables ageing</strong></td><td>Chasing money, bucketed by how overdue.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  </div>
+  <a class="back" href="#s1">↑ Back to the top</a>
+</section>
+
+</div>
+
+</body>
+</html>

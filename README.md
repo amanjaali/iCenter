@@ -53,6 +53,21 @@ During development run `npm run dev` alongside `php artisan serve`; Tailwind
 compiles only the classes it can see in the Blade files, so a production build
 must be re-run after any view changes.
 
+## The documents
+
+`docs/` holds the scope of work, second edition — the requirements document
+rewritten around how the system is operated rather than how it is built. Its
+§4 specifies the invoice-to-payment-to-receipt cycle end to end, §7 works a
+full month through with real figures, and the chart of accounts and the
+automatic ledger entries sit in appendices as back-end reference.
+
+| File | For |
+| --- | --- |
+| `docs/scope-of-work.html` | Reading and sharing — open it in a browser |
+| `docs/eTrackify-Accounting-Scope-of-Work-v2.docx` | Circulating and signing off |
+
+Both are generated from the same source, so they cannot drift apart.
+
 ## The handbook
 
 `public/handbook.html` is the user handbook — every screen, every rule the
