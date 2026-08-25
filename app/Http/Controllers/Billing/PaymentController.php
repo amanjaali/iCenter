@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Accounting\PostingException;
 use App\Services\Billing\PaymentService;
+use App\Services\SettingsService;
 use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,7 +19,10 @@ use Illuminate\Support\Carbon;
  */
 class PaymentController extends Controller
 {
-    public function __construct(private readonly PaymentService $payments) {}
+    public function __construct(
+        private readonly PaymentService $payments,
+        private readonly SettingsService $settings,
+    ) {}
 
     public function index(Request $request)
     {
@@ -126,6 +130,25 @@ class PaymentController extends Controller
             'payment' => $payment,
             'outstanding' => Invoice::where('bus_company_id', $payment->bus_company_id)
                 ->outstanding()->orderBy('due_date')->get(),
+        ]);
+    }
+
+    /**
+     * The receipt as it is handed to the bus company — the same stationery as
+     * the invoice, listing which invoices the money settled and what, if
+     * anything, is still owed after it.
+     */
+    public function print(Payment $payment)
+    {
+        $this->authorize('view-financials');
+
+        $payment->load(['busCompany', 'depositAccount', 'allocations.invoice']);
+
+        return view('billing.payments.print', [
+            'payment' => $payment,
+            'company' => $this->settings->all(),
+            'balance' => Invoice::where('bus_company_id', $payment->bus_company_id)
+                ->outstanding()->sum('balance_due'),
         ]);
     }
 

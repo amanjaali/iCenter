@@ -135,6 +135,18 @@
                 </dl>
             </div>
 
+            <div class="card card-pad">
+                <div class="eyebrow mb-3">Give it to the customer</div>
+                <a href="{{ route('payments.print', $payment) }}" target="_blank"
+                   class="btn btn-secondary btn-sm w-full justify-center">
+                    <x-icon name="print" class="size-3.5"/> Print receipt
+                </a>
+                <p class="mt-2.5 text-[11px] leading-relaxed text-faint">
+                    Opens the receipt on ALLVA stationery — the amount in figures and words, which
+                    invoices it settled, and what is left owing. Print it or save it as a PDF to send.
+                </p>
+            </div>
+
             @can('manage-payments')
                 @if ($payment->status !== 'void')
                     <div class="card card-pad">

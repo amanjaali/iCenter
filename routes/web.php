@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
     Route::get('payments/suggest', [PaymentController::class, 'suggest'])->name('payments.suggest');
+    Route::get('payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('payments/{payment}/allocate', [PaymentController::class, 'allocate'])->name('payments.allocate');
     Route::post('payments/{payment}/void', [PaymentController::class, 'void'])->name('payments.void');

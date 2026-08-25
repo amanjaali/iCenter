@@ -59,6 +59,58 @@ final class Money
         return (float) round((float) $amount, 0);
     }
 
+    /**
+     * The amount written out in words, for the receipt handed to a bus
+     * company. Stating the figure twice is the ordinary safeguard on a
+     * receipt: a digit altered afterwards no longer agrees with the words.
+     * Iraqi Dinar has no minor units in circulation, so this is whole dinars.
+     */
+    public static function words(float|int|string|null $amount): string
+    {
+        $value = (int) round(abs((float) ($amount ?? 0)));
+        $prefix = (float) ($amount ?? 0) < 0 ? 'Minus ' : '';
+        $currency = config('allva.currency.code', 'IQD') === 'IQD'
+            ? 'Iraqi Dinars'
+            : config('allva.currency.code', 'IQD');
+
+        return $prefix.ucfirst(self::spell($value)).' '.$currency.' only';
+    }
+
+    /** Spell a non-negative integer in English. */
+    private static function spell(int $n): string
+    {
+        static $units = [
+            0 => 'zero', 1 => 'one', 2 => 'two', 3 => 'three', 4 => 'four', 5 => 'five',
+            6 => 'six', 7 => 'seven', 8 => 'eight', 9 => 'nine', 10 => 'ten',
+            11 => 'eleven', 12 => 'twelve', 13 => 'thirteen', 14 => 'fourteen',
+            15 => 'fifteen', 16 => 'sixteen', 17 => 'seventeen', 18 => 'eighteen',
+            19 => 'nineteen', 20 => 'twenty', 30 => 'thirty', 40 => 'forty',
+            50 => 'fifty', 60 => 'sixty', 70 => 'seventy', 80 => 'eighty', 90 => 'ninety',
+        ];
+
+        if ($n < 21) {
+            return $units[$n];
+        }
+
+        if ($n < 100) {
+            $tens = intdiv($n, 10) * 10;
+            $rest = $n % 10;
+
+            return $units[$tens].($rest ? '-'.$units[$rest] : '');
+        }
+
+        foreach ([1_000_000_000 => 'billion', 1_000_000 => 'million', 1_000 => 'thousand', 100 => 'hundred'] as $size => $name) {
+            if ($n >= $size) {
+                $rest = $n % $size;
+                $joiner = $rest === 0 ? '' : ($rest < 100 ? ' and ' : ' ');
+
+                return self::spell(intdiv($n, $size)).' '.$name.$joiner.($rest ? self::spell($rest) : '');
+            }
+        }
+
+        return (string) $n;
+    }
+
     /** Accounting presentation: negatives in parentheses, zero as a dash. */
     public static function accounting(float|int|string|null $amount): string
     {
