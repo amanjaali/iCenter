@@ -180,15 +180,18 @@ class JournalController extends Controller
     private function lines(array $data): array
     {
         return collect($data['lines'])
-            ->filter(fn ($line) => ! empty($line['account_id'])
+            ->filter(fn ($line) => ! empty($line['account_id'] ?? null)
                 && ((float) ($line['debit'] ?? 0) > 0 || (float) ($line['credit'] ?? 0) > 0))
             ->map(fn ($line) => [
                 'account' => (int) $line['account_id'],
                 'description' => $line['description'] ?? null,
                 'debit' => (float) ($line['debit'] ?? 0),
                 'credit' => (float) ($line['credit'] ?? 0),
-                'department_id' => $line['department_id'] ?: null,
-                'project_id' => $line['project_id'] ?: null,
+                // ?? not ?: — a row posted without these keys at all (an
+                // account that needs no tags, or a client that omits empty
+                // selects) must not be a fatal error.
+                'department_id' => ($line['department_id'] ?? null) ?: null,
+                'project_id' => ($line['project_id'] ?? null) ?: null,
             ])
             ->values()
             ->all();

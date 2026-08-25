@@ -1,58 +1,198 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
+  <img src="public/brand/logo/allva-accounting-primary.svg" alt="ALLVA Accounting" height="52">
+  <p><strong>eTrackify accounting and financial management system</strong></p>
+</div>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+A complete general ledger system for ALLVA Company and its eTrackify school bus
+tracking project, built to the *eTrackify Accounting System — Scope of Work*,
+version 1.0.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The objective the scope of work sets is that **no item of income or expense can
+be lost, misrecorded, or left untracked**, and that all five partners have full
+visibility of the company's financial activity. Everything below serves that.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer | Choice |
+|---|---|
+| Framework | Laravel 13 (PHP 8.3+) |
+| Database | MySQL 8.4 LTS or later |
+| Front end | Blade + Livewire 3 + Alpine, Tailwind CSS 4, built with Vite |
+| Design | ALLVA brand kit — tokens, logo lockups and icons in `public/brand/` |
 
-## Learning Laravel
+Livewire and Blade were chosen over a separate SPA deliberately: this is a dense,
+form-and-table accounting application where server-rendered pages keep the money
+logic on the server, where it can be tested, rather than duplicating it in a
+client that could disagree with the ledger.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
 
 ```bash
-composer require laravel/boost --dev
+composer install
+npm install && npm run build
 
-php artisan boost:install
+cp .env.example .env
+php artisan key:generate
+
+# set DB_DATABASE / DB_USERNAME / DB_PASSWORD in .env, then:
+php artisan allva:install            # schema, chart of accounts, core setup
+php artisan allva:install --demo     # …and four months of worked example data
+
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+`allva:install --fresh` drops and recreates every table first. It refuses to do
+so in production without confirmation.
 
-## Contributing
+The installer prints one login per role. **Every one uses the password
+`password` — change them all before the system holds real accounting data.**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+During development run `npm run dev` alongside `php artisan serve`; Tailwind
+compiles only the classes it can see in the Blade files, so a production build
+must be re-run after any view changes.
 
-## Code of Conduct
+## How the scope of work maps onto the system
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### §2 Company structure — `Partner`, `DistributionService`
 
-## Security Vulnerabilities
+Five partners at 20% each. The percentage is a column, never a constant: a change
+in shareholding goes through `DistributionService::changeOwnership()`, which
+requires a reason and writes an `ownership_change_logs` row. A distribution that
+has already been posted keeps the percentage in force when it was declared.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### §3 The operational registry — `BusCompany` → `Bus` → `Student`
 
-## License
+The chain that feeds billing. The key table is `student_enrollments`: billing
+counts days from enrollment records, not from `students.status`, which is what
+makes a mid-month join, transfer or exit billable and a past invoice
+reproducible. Changing a student's bus closes the open enrollment and opens a new
+one rather than editing history.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### §4 Revenue model — `RateResolver`, `BillingService`, `InvoiceService`
+
+The rate lives in an effective-dated `rate_cards` table and is read only through
+`RateResolver`. A company-specific rate beats the general one; a historical month
+always resolves the rate that applied at the time, so a future price rise never
+restates a past invoice. Every rate change is logged with the user, the date and
+a mandatory reason (§4.2).
+
+Invoices are generated from the registry, never typed: bus company → buses →
+students present in the month → days → amount. The generation screen previews
+every company, and the reason any company is being skipped, before writing
+anything.
+
+Revenue recognition follows §4.4: a month already served is earned
+(`DR 1030 / CR 4010`); a month billed in advance is deferred
+(`DR 1030 / CR 2060`) and released to 4010 when the month arrives.
+
+### §5 Revenue split and distributions — `RevenueShareService`, `DistributionService`
+
+Cyber Gate's share posts `DR 5010 / CR 2040`; partner distributions post
+`DR 3060 / CR 2050`. Partner shares are allocated by largest remainder so five
+20% shares of an odd amount still total the amount declared, to the dinar.
+
+Distributions are booked to **3060 partner current accounts and drawings**, never
+against a partner's 3010–3050 capital account: capital is what a partner put in,
+and a profit distribution must not read as a reduction of it.
+
+### §6 Chart of accounts — `ChartOfAccountsSeeder`
+
+All 73 accounts, reproduced exactly, with the class numbering fixed. Accounts the
+posting engine resolves by code (1030, 2060, 4010, 5010 and so on) are marked
+`is_system` and cannot be renumbered — the seeder fails loudly if any code the
+engine needs is missing.
+
+### §7 Expense classification — `JournalService`, `ExpenseService`
+
+Every expense carries an account, a cost centre and a project. This is enforced
+in the ledger, not merely requested by the form: an expense account is flagged
+`requires_department` / `requires_project`, and `JournalService` refuses the
+entry without them. Fixed/variable and capex/opex are carried onto the journal
+line so the reports do not have to re-derive them.
+
+Overhead that belongs to no single project is booked to the overhead pool and
+spread across projects **at reporting time** by the configured method — the
+ledger keeps the cost where it was incurred.
+
+### §8 Reporting — `app/Services/Reports/`
+
+All seventeen required reports, sharing one `ReportFilters` object so every one
+filters by date range, project and department and exports to CSV identically.
+Reports read **only posted journals**; drafts and reversed entries are invisible
+to reporting by construction.
+
+### §9 Access and permissions — `AuthServiceProvider`
+
+| Role | May do |
+|---|---|
+| Accountant | Create, edit and post entries; run all reports |
+| Operations | Register bus companies, buses and students only — **no financial access at all**, including a separate dashboard with no money on it |
+| Partner | Read-only across every financial screen and report |
+| Administrator | Users, rate table, settings — but **not** posting to the ledger |
+
+Abilities are derived from the role in one place, so "what may a partner do" has
+a single answer. An administrator is deliberately not an accountant: separating
+configuring the system from posting to it is the point of having both roles.
+
+The audit trail (§9.3) is append-only — the application never updates or deletes
+an audit row. Nothing posted is ever deleted; corrections are reversals, which
+create a mirror journal and leave both on the record.
+
+### §10 The three open decisions
+
+The scope of work leaves three decisions open, each of which changes the
+accounting logic. All three are implemented as **settings**, not constants, so
+whichever way the client decides the system does not need rebuilding — and each
+is stamped onto the documents it affects, so changing the decision later never
+restates a period already posted.
+
+| | Decision | Where | Default |
+|---|---|---|---|
+| §10.1 | Cyber Gate takes 50% of gross revenue, or 50% of net profit after expenses | Settings → Revenue share basis | Gross (as the document assumes) |
+| §10.2 | Mid-month joins and exits: pro-rate by day, full month, or half month | Settings → Mid-month rule | Pro-rate by day |
+| §10.3 | Billing pauses over holidays and the summer, or runs all twelve months | Academic years, **per year** | Continue |
+
+These defaults are assumptions, not answers. They are the first thing to confirm
+with the client, and each can be changed in the interface without a code change.
+
+## Tests
+
+```bash
+php artisan test
+```
+
+72 tests run against MySQL — the database this is deployed on — rather than an
+in-memory SQLite, so they exercise the real decimal handling, unique indexes and
+row locking the posting engine depends on. Create the test database once:
+
+```sql
+CREATE DATABASE allva_accounting_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+The suite covers the money arithmetic (shares always total the amount declared),
+all three proration rules, the posting invariants (balance, closed periods, the
+§7 tags, reversal instead of deletion), billing generated from the registry,
+both §10.1 revenue-share treatments, the distribution maths, the §9 permission
+model, and the main workflows through the HTTP layer.
+
+## Layout
+
+```
+app/
+  Enums/          Domain vocabulary — roles, statuses, the §10 decisions
+  Models/         Eloquent models; Auditable writes the §9.3 trail
+  Services/
+    Accounting/   The posting engine: JournalService, LedgerService, PeriodService
+    Billing/      RateResolver, BillingService, InvoiceService, PaymentService
+    Partners/     RevenueShareService, DistributionService
+    Expenses/     ExpenseService  ·  Payroll/  ·  Assets/
+    Reports/      The seventeen reports of §8
+  Support/Money   Rounding and largest-remainder allocation
+public/brand/     The supplied ALLVA brand kit, unmodified
+```
+
+The money logic lives in the service layer, not in controllers or models:
+controllers validate and delegate, and every automatic posting goes through
+`JournalService`, so the ledger's rules are enforced in one place.
