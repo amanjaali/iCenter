@@ -65,6 +65,10 @@ class DashboardController extends Controller
             'recentInvoices' => Invoice::with('busCompany')->issued()->latest('issue_date')->limit(6)->get(),
             'partnerShare' => $this->distributions->calculate($yearStart, $today),
             'sharePartner' => $this->settings->revenueSharePartnerName(),
+            'sharePayable' => $this->ledger->balanceAsAt(
+                \App\Models\Account::system('revenue_share_payable'),
+                $today,
+            ),
         ]);
     }
 

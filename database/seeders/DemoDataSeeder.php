@@ -38,11 +38,20 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
-        // The academic year opens in September 2026 (scope of work §4.1).
-        $this->start = Carbon::create(2026, 9, 1);
+        /*
+         * The demo runs the four months ending with the current one, so the
+         * dashboard and the reports have something to show today rather than
+         * plotting a year that has not happened yet. The 2026-2027 academic
+         * year from the scope of work is seeded separately and left ready for
+         * when it starts.
+         */
+        $this->start = Carbon::today()->startOfMonth()->subMonths(3);
 
-        app(PeriodService::class)->createFiscalYear(2026);
-        app(PeriodService::class)->createFiscalYear(2027);
+        foreach ([$this->start->year, $this->start->copy()->addMonths(3)->year] as $year) {
+            app(PeriodService::class)->createFiscalYear($year);
+        }
+
+        $this->academicYearForDemoPeriod();
 
         $this->command?->info('  Registry…');
         $companies = $this->registry();
@@ -67,6 +76,62 @@ class DemoDataSeeder extends Seeder
 
         $this->command?->info('  Partner distribution…');
         $this->distribution();
+    }
+
+    /**
+     * The academic year covering the demo window, on the usual September to
+     * August convention, with the same 4,000 IQD rate the scope of work sets
+     * for 2026-2027. Without it nothing is billable: §4.2 refuses to invent a
+     * rate for a month no rate card covers.
+     *
+     * Because the demo runs in the months before 2026-2027 begins, this
+     * creates the preceding year — which also gives the academic year
+     * comparison report (§8.2) a second year to compare against.
+     */
+    private function academicYearForDemoPeriod(): void
+    {
+        if (\App\Models\AcademicYear::forDate($this->start)) {
+            return;
+        }
+
+        // September starts the school year; anything earlier belongs to the
+        // year that began the previous September.
+        $openingYear = $this->start->month >= 9 ? $this->start->year : $this->start->year - 1;
+        $yearStart = Carbon::create($openingYear, 9, 1)->startOfDay();
+        $yearEnd = Carbon::create($openingYear + 1, 8, 31)->endOfDay();
+
+        $year = \App\Models\AcademicYear::updateOrCreate(
+            ['name' => $openingYear.'-'.($openingYear + 1)],
+            [
+                'start_date' => $yearStart,
+                'end_date' => $yearEnd,
+                // 'continue' so the summer months in the demo window are billed
+                // — which is also what demonstrates the §10.3 setting.
+                'billing_mode' => \App\Enums\BillingMode::Continue,
+                'billable_months' => [9, 10, 11, 12, 1, 2, 3, 4, 5, 6],
+                'is_active' => true,
+                'notes' => 'Preceding academic year, carrying the same rate as 2026-2027.',
+            ]
+        );
+
+        \App\Models\RateCard::firstOrCreate(
+            [
+                'academic_year_id' => $year->id,
+                'bus_company_id' => null,
+                'effective_from' => $yearStart->toDateString(),
+            ],
+            [
+                'amount' => 4000.00,
+                'period' => 'per_student_month',
+                'effective_to' => $yearEnd->toDateString(),
+                'is_active' => true,
+                'notes' => 'Standard rate for all bus companies — scope of work §4.1.',
+            ]
+        );
+
+        // Only one year is current at a time; the 2026-2027 year set up from
+        // the scope of work stays configured and takes over when it starts.
+        \App\Models\AcademicYear::where('id', '!=', $year->id)->update(['is_active' => false]);
     }
 
     /** @return array<int,BusCompany> */
@@ -310,11 +375,16 @@ class DemoDataSeeder extends Seeder
         foreach ($result['created'] as $index => $invoice) {
             $invoice->refresh();
 
-            if ($invoice->bus_company_id === $companies[2]->id && $month->month >= 11) {
-                continue; // left outstanding on purpose
+            $monthOffset = (int) $this->start->diffInMonths($month);
+
+            // The third company stops paying in the last two months, and the
+            // second underpays once, so the ageing and collection reports have
+            // real arrears to show.
+            if ($invoice->bus_company_id === $companies[2]->id && $monthOffset >= 2) {
+                continue;
             }
 
-            $fraction = $invoice->bus_company_id === $companies[1]->id && $month->month === 10 ? 0.6 : 1.0;
+            $fraction = $invoice->bus_company_id === $companies[1]->id && $monthOffset === 1 ? 0.6 : 1.0;
             $amount = min(
                 \App\Support\Money::whole((float) $invoice->total * $fraction),
                 (float) $invoice->balance_due,
@@ -447,7 +517,7 @@ class DemoDataSeeder extends Seeder
             $service->post($run);
 
             // Settle the first two months, leave the rest outstanding.
-            if ($month->month <= 10) {
+            if ((int) $this->start->diffInMonths($month) <= 1) {
                 $service->pay(
                     $run->fresh(),
                     $month->copy()->endOfMonth()->addDays(10),
@@ -475,7 +545,8 @@ class DemoDataSeeder extends Seeder
 
         // Retain a quarter of the profit in the company; distribute the rest.
         $retained = round($calculation['net_profit'] * 0.25);
-        $run = $service->prepare($from, $to, $retained, 'Q4 2026 partner distribution');
+        $run = $service->prepare($from, $to, $retained,
+            $from->format('M').' – '.$to->format('M Y').' partner distribution');
         $service->post($run);
 
         // Pay two partners in full so the report shows paid and outstanding.
